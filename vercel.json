@@ -1,6 +1,7 @@
 {
   "version": 2,
   "name": "nd-express",
+  "buildCommand": "npm run build",
   "builds": [
     {
       "src": "**/*",

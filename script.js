@@ -271,17 +271,32 @@ async function analyzeImageWithOpenAI(imageBase64) {
         // Limpar resposta removendo markdown e caracteres inválidos
         let cleanContent = content.trim();
         
-        // Remover blocos de código markdown (```json ... ```)
+        // Remover blocos de código markdown mais agressivamente
         cleanContent = cleanContent.replace(/```json\s*/gi, '');
         cleanContent = cleanContent.replace(/```\s*/g, '');
+        cleanContent = cleanContent.replace(/^```/gm, '');
+        cleanContent = cleanContent.replace(/```$/gm, '');
+        
+        // Remover caracteres de backtick que podem sobrar
+        cleanContent = cleanContent.replace(/`/g, '');
         
         // Remover quebras de linha e espaços extras
         cleanContent = cleanContent.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
         
         console.log('🧹 Conteúdo limpo:', cleanContent);
         
-        // Extrair JSON da resposta limpa
-        const jsonMatch = cleanContent.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/);
+        // Extrair JSON da resposta limpa com regex mais robusta
+        let jsonMatch = cleanContent.match(/\{[\s\S]*?\}/);
+        
+        // Se não encontrou, tentar extrair apenas o primeiro objeto JSON válido
+        if (!jsonMatch) {
+            const startIndex = cleanContent.indexOf('{');
+            const endIndex = cleanContent.lastIndexOf('}');
+            if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+                jsonMatch = [cleanContent.substring(startIndex, endIndex + 1)];
+            }
+        }
+        
         if (!jsonMatch) {
             console.error('❌ Não foi possível encontrar JSON na resposta:', cleanContent);
             throw new Error('Formato de resposta inválido - JSON não encontrado');

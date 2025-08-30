@@ -6,11 +6,13 @@
   "scripts": {
     "start": "python -m http.server 8000",
     "dev": "python -m http.server 8000",
-    "build": "echo 'Build completed - Static files ready'",
+    "build": "node build-config.js",
     "test": "node -c script.js && node -c config.js",
     "lint": "echo 'Linting JavaScript files' && node -c script.js && node -c config.js",
     "deploy": "vercel --prod",
-    "preview": "vercel"
+    "preview": "vercel",
+    "build:local": "echo 'Local build - using existing config.js'",
+    "build:prod": "node build-config.js"
   },
   "keywords": [
     "expense-management",
