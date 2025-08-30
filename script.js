@@ -227,57 +227,27 @@ async function processImage(file) {
 }
 
 async function analyzeImageWithOpenAI(imageBase64) {
-  console.log('🔍 Iniciando extração de dados da imagem...');
+  console.log('🔍 Iniciando análise segura da imagem...');
   console.log('📏 Tamanho do Base64:', imageBase64.length);
 
   try {
-    console.log('🌐 Fazendo requisição para OpenAI...');
+    console.log('🌐 Fazendo requisição para endpoint seguro...');
 
     // Remover prefixo data:image se existir
     const base64Data = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
 
-    const requestBody = {
-      model: OPENAI_CONFIG.MODEL,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'Você é um assistente de finanças especialista em extrair informações de comprovantes de despesa. Sua única tarefa é analisar a imagem e retornar os dados em um formato JSON estrito, sem nenhuma palavra ou explicação adicional.',
-        },
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: 'Analise esta imagem de comprovante e extraia EXATAMENTE os seguintes dados em formato JSON: {"description": "string", "value": number, "date": "YYYY-MM-DD"}. REGRAS: 1) Para descrição: SEMPRE analise o HORÁRIO no comprovante para determinar o tipo de refeição: antes das 10:30 = "Café da Manhã", entre 10:30-15:00 = "Almoço", após 15:00 = "Jantar". Se for McDonald\'s, Burger King, KFC, Subway ou restaurantes similares, use o horário para definir (ex: "Almoço", "Jantar", "Café da Manhã"). Para outros casos: "Uber" (transporte), "Hospedagem" (hotéis), "Outros" (demais). 2) Para valor: use o valor total pago (após desconto se houver), apenas números com ponto decimal. 3) Para data: use a data do comprovante no formato YYYY-MM-DD. IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.',
-            },
-            {
-              type: 'image_url',
-              image_url: {
-                url: `data:image/jpeg;base64,${base64Data}`,
-              },
-            },
-          ],
-        },
-      ],
-      max_tokens: OPENAI_CONFIG.MAX_TOKENS,
-    };
-
-    console.log('📤 Fazendo requisição para:', OPENAI_API_URL);
-
-    const response = await fetch(OPENAI_API_URL, {
+    const response = await fetch(OPENAI_CONFIG.API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        Accept: 'application/json',
-        'User-Agent': 'NDExpressApp/1.0',
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify({
+        imageBase64: base64Data,
+        prompt: 'Analise esta imagem de comprovante e extraia EXATAMENTE os seguintes dados em formato JSON: {"description": "string", "value": number, "date": "YYYY-MM-DD"}. REGRAS: 1) Para descrição: SEMPRE analise o HORÁRIO no comprovante para determinar o tipo de refeição: antes das 10:30 = "Café da Manhã", entre 10:30-15:00 = "Almoço", após 15:00 = "Jantar". Se for McDonald\'s, Burger King, KFC, Subway ou restaurantes similares, use o horário para definir (ex: "Almoço", "Jantar", "Café da Manhã"). Para outros casos: "Uber" (transporte), "Hospedagem" (hotéis), "Outros" (demais). 2) Para valor: use o valor total pago (após desconto se houver), apenas números com ponto decimal. 3) Para data: use a data do comprovante no formato YYYY-MM-DD. IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.'
+      }),
     });
 
     console.log('📥 Status da resposta:', response.status);
-    console.log('📥 Headers da resposta:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -285,51 +255,29 @@ async function analyzeImageWithOpenAI(imageBase64) {
       throw new Error(`Erro na API: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
-    const data = await response.json();
-    console.log('📄 Resposta completa da API:', JSON.stringify(data, null, 2));
+    const result = await response.json();
+    console.log('📄 Resposta do endpoint seguro:', JSON.stringify(result, null, 2));
 
-    const content = data.choices[0]?.message?.content;
-    console.log('📝 Conteúdo extraído:', content);
-
-    if (!content) {
-      throw new Error('Resposta vazia da API');
+    if (!result.success) {
+      throw new Error(result.error || 'Análise falhou');
     }
 
-    // Limpar resposta removendo markdown e caracteres inválidos
-    let cleanContent = content.trim();
+    const extractedData = result.data;
+    console.log('📊 Dados extraídos:', extractedData);
 
-    // Remover blocos de código markdown mais agressivamente
-    cleanContent = cleanContent.replace(/```json\s*/gi, '');
-    cleanContent = cleanContent.replace(/```\s*/g, '');
-    cleanContent = cleanContent.replace(/^```/gm, '');
-    cleanContent = cleanContent.replace(/```$/gm, '');
+    // Mapear descrição para categoria
+    const category = mapDescriptionToCategory(extractedData.description);
 
-    // Remover caracteres de backtick que podem sobrar
-    cleanContent = cleanContent.replace(/`/g, '');
+    const finalResult = {
+      date: extractedData.date,
+      value: extractedData.value,
+      description: extractedData.description,
+      category: category,
+      confidence: extractedData.confidence || 95,
+    };
 
-    // Remover quebras de linha e espaços extras
-    cleanContent = cleanContent.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
-
-    console.log('🧹 Conteúdo limpo:', cleanContent);
-
-    // Extrair JSON da resposta limpa com regex mais robusta
-    let jsonMatch = cleanContent.match(/\{[\s\S]*?\}/);
-
-    // Se não encontrou, tentar extrair apenas o primeiro objeto JSON válido
-    if (!jsonMatch) {
-      const startIndex = cleanContent.indexOf('{');
-      const endIndex = cleanContent.lastIndexOf('}');
-      if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
-        jsonMatch = [cleanContent.substring(startIndex, endIndex + 1)];
-      }
-    }
-
-    if (!jsonMatch) {
-      console.error('❌ Não foi possível encontrar JSON na resposta:', cleanContent);
-      throw new Error('Formato de resposta inválido - JSON não encontrado');
-    }
-
-    console.log('🔍 JSON encontrado:', jsonMatch[0]);
+    console.log('✅ Dados processados com sucesso:', finalResult);
+    return finalResult;
 
     let extractedData;
     try {

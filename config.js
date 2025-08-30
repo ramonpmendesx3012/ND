@@ -11,8 +11,8 @@ const OPENAI_CONFIG = {
 
 // Configuração do Supabase
 const SUPABASE_CONFIG = {
-  URL: process.env.SUPABASE_URL || 'sua-url-supabase-aqui',
-  ANON_KEY: process.env.SUPABASE_ANON_KEY || 'sua-chave-supabase-aqui',
+  URL: process.env.SUPABASE_URL || 'https://gkguocajdzoyocraeyjj.supabase.co',
+  ANON_KEY: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrZ3VvY2FqZHpveW9jcmFleWpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMzM3OTQsImV4cCI6MjA3MTkwOTc5NH0.pYNh6Z6fOkJZqzyZWfNnt1xoQgtTKl-4HyoC9djv2FQ',
 };
 
 // Configurações de segurança
