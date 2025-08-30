@@ -1,0 +1,69 @@
+{
+  "name": "nd-express",
+  "version": "1.0.0",
+  "description": "Sistema moderno e inteligente para gestão de notas de despesa com IA",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "python -m http.server 8000",
+    "build": "echo 'Build completed - Static files ready'",
+    "test": "node -c script.js && node -c config.js",
+    "lint": "echo 'Linting JavaScript files' && node -c script.js && node -c config.js",
+    "deploy": "vercel --prod",
+    "preview": "vercel"
+  },
+  "keywords": [
+    "expense-management",
+    "ai",
+    "openai",
+    "supabase",
+    "pwa",
+    "javascript",
+    "receipt-analysis",
+    "business-travel",
+    "excel-export"
+  ],
+  "author": {
+    "name": "Ramon",
+    "url": "https://github.com/ramon"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ramonpmendesx3012/ND.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ramonpmendesx3012/ND/issues"
+  },
+  "homepage": "https://github.com/ramonpmendesx3012/ND#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "dependencies": {},
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
+  "pwa": {
+    "name": "ND Express",
+    "short_name": "ND Express",
+    "description": "Sistema de Gestão de Notas de Despesa",
+    "theme_color": "#4f46e5",
+    "background_color": "#ffffff",
+    "display": "standalone",
+    "orientation": "portrait",
+    "scope": "/",
+    "start_url": "/"
+  },
+  "vercel": {
+    "framework": null,
+    "buildCommand": "npm run build",
+    "outputDirectory": ".",
+    "installCommand": "npm install"
+  }
+}
