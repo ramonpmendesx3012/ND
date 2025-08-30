@@ -6,9 +6,13 @@ console.log('🔧 Iniciando geração do config.js para produção...');
 
 // Verificar se as variáveis de ambiente estão definidas
 const requiredEnvVars = {
-  OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   SUPABASE_URL: process.env.SUPABASE_URL,
   SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+};
+
+// OPENAI_API_KEY é necessária apenas para serverless functions
+const optionalEnvVars = {
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY,
 };
 
 // Validar variáveis obrigatórias
@@ -30,51 +34,80 @@ if (missingVars.length > 0) {
   console.error('   2. Vá em Environment Variables');
   console.error('   3. Adicione as variáveis necessárias');
   console.error('');
-  console.error('📝 Variáveis necessárias:');
-  console.error('   OPENAI_API_KEY=sk-proj-...');
+  console.error('📝 Variáveis obrigatórias para frontend:');
   console.error('   SUPABASE_URL=https://....supabase.co');
   console.error('   SUPABASE_ANON_KEY=eyJhbGciOi...');
+  console.error('');
+  console.error('📝 Variáveis para serverless functions:');
+  console.error('   OPENAI_API_KEY=sk-proj-...');
   process.exit(1);
 }
 
 // Gerar conteúdo do config.js
 const configContent = `// config.js - Gerado automaticamente pelo build-config.js
-// ⚠️ ATENÇÃO: Este arquivo contém chaves de API. Não commitar em produção!
+// ✅ CONFIGURAÇÃO SEGURA - Chaves protegidas em serverless functions
 
-// Configuração da OpenAI API
+// Configuração da OpenAI API (SEGURA - sem chaves expostas)
 const OPENAI_CONFIG = {
-    API_KEY: '${requiredEnvVars.OPENAI_API_KEY}',
-    API_URL: 'https://api.openai.com/v1/chat/completions',
+    API_URL: '/api/openai-analyze', // Endpoint seguro local
     MODEL: 'gpt-4o',
     MAX_TOKENS: 500
 };
 
 // Configuração do Supabase
 const SUPABASE_CONFIG = {
-    URL: '${requiredEnvVars.SUPABASE_URL}',
-    ANON_KEY: '${requiredEnvVars.SUPABASE_ANON_KEY}'
+    URL: process.env.SUPABASE_URL || '${requiredEnvVars.SUPABASE_URL}',
+    ANON_KEY: process.env.SUPABASE_ANON_KEY || '${requiredEnvVars.SUPABASE_ANON_KEY}'
 };
 
-// Validação das configurações
-if (OPENAI_CONFIG.API_KEY === 'sua-chave-openai-aqui' || 
-    SUPABASE_CONFIG.URL === 'sua-url-supabase-aqui' ||
-    SUPABASE_CONFIG.ANON_KEY === 'sua-chave-supabase-aqui') {
-    console.error('❌ Erro: Configurações não foram definidas corretamente!');
-    console.error('Verifique as variáveis de ambiente no Vercel.');
+// Configurações de segurança
+const SECURITY_CONFIG = {
+    MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
+    ALLOWED_FILE_TYPES: ['image/jpeg', 'image/png', 'image/webp'],
+    RATE_LIMIT_REQUESTS: 10, // Máximo de requests por minuto
+    RATE_LIMIT_WINDOW: 60000, // 1 minuto em ms
+    MAX_DESCRIPTION_LENGTH: 100,
+    MAX_VALUE: 999999
+};
+
+// Validação de configuração
+function validateConfig() {
+    const errors = [];
+    
+    if (SUPABASE_CONFIG.URL === 'sua-url-supabase-aqui') {
+        errors.push('SUPABASE_URL não configurada');
+    }
+    
+    if (SUPABASE_CONFIG.ANON_KEY === 'sua-chave-supabase-aqui') {
+        errors.push('SUPABASE_ANON_KEY não configurada');
+    }
+    
+    if (errors.length > 0) {
+        console.error('❌ Erros de configuração:', errors);
+        return false;
+    }
+    
+    console.log('✅ Configuração validada com sucesso');
+    return true;
 }
 
-// Log de configuração (sem expor chaves completas)
+// Log das configurações (sem expor chaves completas)
 console.log('🔧 Configurações carregadas:');
-console.log('   OpenAI API Key:', OPENAI_CONFIG.API_KEY ? OPENAI_CONFIG.API_KEY.substring(0, 20) + '...' : 'NÃO DEFINIDA');
+console.log('   OpenAI Endpoint:', OPENAI_CONFIG.API_URL);
 console.log('   Supabase URL:', SUPABASE_CONFIG.URL);
 console.log('   Supabase Key:', SUPABASE_CONFIG.ANON_KEY ? SUPABASE_CONFIG.ANON_KEY.substring(0, 20) + '...' : 'NÃO DEFINIDA');
 
 // Exportar configuração
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { OPENAI_CONFIG, SUPABASE_CONFIG };
+    module.exports = { OPENAI_CONFIG, SUPABASE_CONFIG, SECURITY_CONFIG, validateConfig };
 } else {
     window.OPENAI_CONFIG = OPENAI_CONFIG;
     window.SUPABASE_CONFIG = SUPABASE_CONFIG;
+    window.SECURITY_CONFIG = SECURITY_CONFIG;
+    window.validateConfig = validateConfig;
+    
+    // Validar configuração ao carregar
+    document.addEventListener('DOMContentLoaded', validateConfig);
 }
 `;
 
