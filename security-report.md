@@ -24,34 +24,38 @@
 **Local:** `config.js`, `build-config.js`, `script.js`  
 **Severidade:** 🔴 **CRÍTICA**
 
-**Descrição:**
-As chaves da OpenAI API estão sendo expostas diretamente no código JavaScript do frontend, tornando-as acessíveis a qualquer usuário através do DevTools do navegador.
+**Descrição:** As chaves da OpenAI API estão sendo expostas diretamente no
+código JavaScript do frontend, tornando-as acessíveis a qualquer usuário através
+do DevTools do navegador.
 
 **Código Vulnerável:**
+
 ```javascript
 // config.js - VULNERÁVEL
 const OPENAI_CONFIG = {
-    API_KEY: process.env.OPENAI_API_KEY || 'sua-chave-openai-aqui',
-    // ...
+  API_KEY: process.env.OPENAI_API_KEY || 'sua-chave-openai-aqui',
+  // ...
 };
 
 // script.js - EXPOSIÇÃO DIRETA
 const OPENAI_API_KEY = OPENAI_CONFIG.API_KEY;
 const response = await fetch(OPENAI_API_URL, {
-    headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        // ...
-    }
+  headers: {
+    Authorization: `Bearer ${OPENAI_API_KEY}`,
+    // ...
+  },
 });
 ```
 
 **Impacto:**
+
 - Uso não autorizado da API OpenAI
 - Custos financeiros elevados
 - Possível violação dos termos de uso
 - Exposição de dados processados pela IA
 
 **Checklist de Correção:**
+
 - [ ] Implementar proxy/backend para chamadas da OpenAI
 - [ ] Remover chaves do código frontend
 - [ ] Criar endpoints serverless no Vercel
@@ -59,6 +63,7 @@ const response = await fetch(OPENAI_API_URL, {
 - [ ] Configurar rate limiting
 
 **Referências:**
+
 - [OWASP A02:2021 - Cryptographic Failures](https://owasp.org/Top10/A02_2021-Cryptographic_Failures/)
 - [CWE-200: Information Exposure](https://cwe.mitre.org/data/definitions/200.html)
 
@@ -67,10 +72,11 @@ const response = await fetch(OPENAI_API_URL, {
 **Local:** Todo o sistema  
 **Severidade:** 🔴 **CRÍTICA**
 
-**Descrição:**
-O sistema não possui nenhum mecanismo de autenticação, permitindo acesso irrestrito a todas as funcionalidades e dados.
+**Descrição:** O sistema não possui nenhum mecanismo de autenticação, permitindo
+acesso irrestrito a todas as funcionalidades e dados.
 
 **Código Vulnerável:**
+
 ```sql
 -- supabase-setup.sql - POLÍTICAS PÚBLICAS
 CREATE POLICY "Permitir acesso público" ON public.nd_viagens
@@ -81,12 +87,14 @@ FOR ALL USING (true) WITH CHECK (true);
 ```
 
 **Impacto:**
+
 - Acesso não autorizado a dados financeiros
 - Manipulação de registros por terceiros
 - Violação de privacidade
 - Não conformidade com LGPD
 
 **Checklist de Correção:**
+
 - [ ] Implementar Supabase Auth
 - [ ] Criar sistema de login/registro
 - [ ] Configurar Row Level Security (RLS)
@@ -94,6 +102,7 @@ FOR ALL USING (true) WITH CHECK (true);
 - [ ] Adicionar sessões seguras
 
 **Referências:**
+
 - [OWASP A07:2021 - Identification and Authentication Failures](https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/)
 - [CWE-287: Improper Authentication](https://cwe.mitre.org/data/definitions/287.html)
 
@@ -106,38 +115,44 @@ FOR ALL USING (true) WITH CHECK (true);
 **Local:** `script.js:handleFileSelect()`  
 **Severidade:** 🟠 **ALTA**
 
-**Descrição:**
-A validação de arquivos é superficial, verificando apenas o tipo MIME que pode ser facilmente falsificado.
+**Descrição:** A validação de arquivos é superficial, verificando apenas o tipo
+MIME que pode ser facilmente falsificado.
 
 **Código Vulnerável:**
+
 ```javascript
 function handleFileSelect(event) {
-    const file = event.target.files[0];
-    if (file) {
-        // VALIDAÇÃO INSUFICIENTE
-        if (!file.type.startsWith('image/')) {
-            showNotification('Por favor, selecione apenas arquivos de imagem.', 'error');
-            return;
-        }
-        
-        // Apenas validação de tamanho
-        if (file.size > 10 * 1024 * 1024) {
-            showNotification('Arquivo muito grande. Máximo 10MB.', 'error');
-            return;
-        }
-        
-        processImage(file);
+  const file = event.target.files[0];
+  if (file) {
+    // VALIDAÇÃO INSUFICIENTE
+    if (!file.type.startsWith('image/')) {
+      showNotification(
+        'Por favor, selecione apenas arquivos de imagem.',
+        'error'
+      );
+      return;
     }
+
+    // Apenas validação de tamanho
+    if (file.size > 10 * 1024 * 1024) {
+      showNotification('Arquivo muito grande. Máximo 10MB.', 'error');
+      return;
+    }
+
+    processImage(file);
+  }
 }
 ```
 
 **Impacto:**
+
 - Upload de arquivos maliciosos
 - Possível execução de código
 - Ataques de path traversal
 - Consumo excessivo de storage
 
 **Checklist de Correção:**
+
 - [ ] Validar extensão real do arquivo
 - [ ] Verificar magic numbers/assinatura do arquivo
 - [ ] Implementar whitelist de tipos permitidos
@@ -146,6 +161,7 @@ function handleFileSelect(event) {
 - [ ] Implementar quarentena de arquivos
 
 **Referências:**
+
 - [OWASP File Upload Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html)
 - [CWE-434: Unrestricted Upload of File with Dangerous Type](https://cwe.mitre.org/data/definitions/434.html)
 
@@ -154,11 +170,12 @@ function handleFileSelect(event) {
 **Local:** `script.js:analyzeImageWithOpenAI()`  
 **Severidade:** 🟠 **ALTA**
 
-**Descrição:**
-Os dados retornados pela OpenAI são processados sem validação adequada, permitindo potencial injeção de código.
+**Descrição:** Os dados retornados pela OpenAI são processados sem validação
+adequada, permitindo potencial injeção de código.
 
 **Código Vulnerável:**
-```javascript
+
+````javascript
 // Processamento direto sem sanitização
 let cleanContent = content.trim();
 cleanContent = cleanContent.replace(/```json\s*/gi, '');
@@ -169,15 +186,17 @@ extractedData = JSON.parse(jsonMatch[0]);
 
 // Uso direto dos dados
 document.getElementById('description').value = extractedData.description;
-```
+````
 
 **Impacto:**
+
 - Cross-Site Scripting (XSS)
 - Injeção de código JavaScript
 - Manipulação de DOM
 - Execução de scripts maliciosos
 
 **Checklist de Correção:**
+
 - [ ] Sanitizar todos os dados da IA
 - [ ] Validar formato e conteúdo
 - [ ] Usar textContent ao invés de innerHTML
@@ -185,6 +204,7 @@ document.getElementById('description').value = extractedData.description;
 - [ ] Adicionar Content Security Policy
 
 **Referências:**
+
 - [OWASP A03:2021 - Injection](https://owasp.org/Top10/A03_2021-Injection/)
 - [CWE-79: Cross-site Scripting](https://cwe.mitre.org/data/definitions/79.html)
 
@@ -193,10 +213,11 @@ document.getElementById('description').value = extractedData.description;
 **Local:** Configuração do Supabase Storage  
 **Severidade:** 🟠 **ALTA**
 
-**Descrição:**
-O bucket de storage está configurado como público com políticas permissivas demais.
+**Descrição:** O bucket de storage está configurado como público com políticas
+permissivas demais.
 
 **Configuração Vulnerável:**
+
 ```sql
 -- Políticas muito permissivas
 CREATE POLICY "Permitir upload público" ON storage.objects
@@ -207,12 +228,14 @@ FOR SELECT USING (bucket_id = 'comprovantes');
 ```
 
 **Impacto:**
+
 - Acesso não autorizado a comprovantes
 - Vazamento de dados financeiros
 - Violação de privacidade
 - Não conformidade com regulamentações
 
 **Checklist de Correção:**
+
 - [ ] Implementar autenticação para storage
 - [ ] Criar políticas baseadas em usuário
 - [ ] Adicionar controle de acesso granular
@@ -228,10 +251,11 @@ FOR SELECT USING (bucket_id = 'comprovantes');
 **Local:** `vercel.json`  
 **Severidade:** 🟡 **MÉDIA**
 
-**Descrição:**
-A CSP permite 'unsafe-inline' que reduz significativamente a proteção contra XSS.
+**Descrição:** A CSP permite 'unsafe-inline' que reduz significativamente a
+proteção contra XSS.
 
 **Configuração Vulnerável:**
+
 ```json
 {
   "key": "Content-Security-Policy",
@@ -240,6 +264,7 @@ A CSP permite 'unsafe-inline' que reduz significativamente a proteção contra X
 ```
 
 **Checklist de Correção:**
+
 - [ ] Remover 'unsafe-inline' de script-src
 - [ ] Implementar nonces para scripts inline
 - [ ] Usar hashes para scripts específicos
@@ -251,24 +276,29 @@ A CSP permite 'unsafe-inline' que reduz significativamente a proteção contra X
 **Local:** `script.js:confirmExpense()`  
 **Severidade:** 🟡 **MÉDIA**
 
-**Descrição:**
-Validações básicas no frontend que podem ser facilmente contornadas.
+**Descrição:** Validações básicas no frontend que podem ser facilmente
+contornadas.
 
 **Código Vulnerável:**
+
 ```javascript
 // Validações apenas no frontend
 if (!date) {
-    showNotification('Por favor, informe a data da despesa.', 'error');
-    return;
+  showNotification('Por favor, informe a data da despesa.', 'error');
+  return;
 }
 
 if (!value || value <= 0) {
-    showNotification('Por favor, informe um valor válido maior que zero.', 'error');
-    return;
+  showNotification(
+    'Por favor, informe um valor válido maior que zero.',
+    'error'
+  );
+  return;
 }
 ```
 
 **Checklist de Correção:**
+
 - [ ] Implementar validação no backend
 - [ ] Adicionar sanitização de dados
 - [ ] Validar tipos de dados rigorosamente
@@ -280,10 +310,11 @@ if (!value || value <= 0) {
 **Local:** `script.js` (múltiplas funções)  
 **Severidade:** 🟡 **MÉDIA**
 
-**Descrição:**
-Logs excessivos que podem expor informações sensíveis em produção.
+**Descrição:** Logs excessivos que podem expor informações sensíveis em
+produção.
 
 **Código Vulnerável:**
+
 ```javascript
 console.log('📝 Dados preparados para inserção:', dadosParaInserir);
 console.log('📊 Resposta do Supabase:', insertData);
@@ -291,6 +322,7 @@ console.log('🔧 Configurações carregadas:', OPENAI_CONFIG.API_KEY);
 ```
 
 **Checklist de Correção:**
+
 - [ ] Remover logs sensíveis em produção
 - [ ] Implementar níveis de log
 - [ ] Mascarar dados sensíveis
@@ -306,10 +338,11 @@ console.log('🔧 Configurações carregadas:', OPENAI_CONFIG.API_KEY);
 **Local:** Chamadas para APIs externas  
 **Severidade:** 🟢 **BAIXA**
 
-**Descrição:**
-Não há controle de taxa para chamadas à OpenAI API, permitindo abuso.
+**Descrição:** Não há controle de taxa para chamadas à OpenAI API, permitindo
+abuso.
 
 **Checklist de Correção:**
+
 - [ ] Implementar rate limiting por usuário
 - [ ] Adicionar throttling para APIs
 - [ ] Configurar limites de uso
@@ -321,10 +354,11 @@ Não há controle de taxa para chamadas à OpenAI API, permitindo abuso.
 **Local:** Todo o sistema  
 **Severidade:** 🟢 **BAIXA**
 
-**Descrição:**
-Ausência de logs de auditoria e monitoramento de eventos de segurança.
+**Descrição:** Ausência de logs de auditoria e monitoramento de eventos de
+segurança.
 
 **Checklist de Correção:**
+
 - [ ] Implementar logs de auditoria
 - [ ] Configurar alertas de segurança
 - [ ] Monitorar tentativas de acesso
@@ -336,30 +370,35 @@ Ausência de logs de auditoria e monitoramento de eventos de segurança.
 ## 📊 Recomendações Gerais de Segurança
 
 ### 🔒 **Autenticação e Autorização**
+
 1. Implementar Supabase Auth com login social
 2. Configurar Row Level Security (RLS) adequadamente
 3. Implementar controle de acesso baseado em papéis
 4. Adicionar autenticação multifator (2FA)
 
 ### 🛡️ **Proteção de APIs**
+
 1. Mover chamadas da OpenAI para serverless functions
 2. Implementar proxy para APIs externas
 3. Configurar rate limiting e throttling
 4. Adicionar validação rigorosa de entrada
 
 ### 🔐 **Gerenciamento de Dados**
+
 1. Criptografar dados sensíveis em repouso
 2. Implementar políticas de retenção de dados
 3. Configurar backup seguro e recovery
 4. Adicionar auditoria de acesso a dados
 
 ### 🌐 **Segurança Web**
+
 1. Fortalecer Content Security Policy
 2. Implementar HTTPS obrigatório
 3. Configurar cabeçalhos de segurança adequados
 4. Adicionar proteção contra CSRF
 
 ### 📱 **Segurança de Upload**
+
 1. Implementar validação rigorosa de arquivos
 2. Adicionar escaneamento de malware
 3. Configurar quarentena de arquivos
@@ -370,6 +409,7 @@ Ausência de logs de auditoria e monitoramento de eventos de segurança.
 ## 🎯 Plano de Melhoria da Postura de Segurança
 
 ### **Fase 1: Correções Críticas (Prioridade Máxima)**
+
 1. **Implementar Backend para OpenAI API** (1-2 dias)
    - Criar serverless functions no Vercel
    - Mover chaves para variáveis de ambiente seguras
@@ -381,6 +421,7 @@ Ausência de logs de auditoria e monitoramento de eventos de segurança.
    - Implementar RLS básico
 
 ### **Fase 2: Correções de Alta Prioridade** (1 semana)
+
 1. **Melhorar Validação de Upload**
    - Implementar validação rigorosa de arquivos
    - Adicionar sanitização de nomes
@@ -392,6 +433,7 @@ Ausência de logs de auditoria e monitoramento de eventos de segurança.
    - Configurar logs de auditoria
 
 ### **Fase 3: Melhorias de Segurança** (2 semanas)
+
 1. **Implementar Monitoramento**
    - Configurar logs de auditoria
    - Implementar alertas de segurança
@@ -403,6 +445,7 @@ Ausência de logs de auditoria e monitoramento de eventos de segurança.
    - Adicionar proteções adicionais
 
 ### **Fase 4: Conformidade e Governança** (1 mês)
+
 1. **Implementar Conformidade LGPD**
    - Adicionar controles de privacidade
    - Implementar direito ao esquecimento
@@ -418,12 +461,14 @@ Ausência de logs de auditoria e monitoramento de eventos de segurança.
 ## 📈 Métricas de Segurança Recomendadas
 
 ### **KPIs de Segurança**
+
 - Tempo médio de detecção de incidentes
 - Número de tentativas de acesso não autorizado
 - Taxa de sucesso de autenticação
 - Tempo de resposta a vulnerabilidades
 
 ### **Monitoramento Contínuo**
+
 - Escaneamento automático de vulnerabilidades
 - Análise de dependências
 - Testes de penetração regulares
@@ -433,7 +478,9 @@ Ausência de logs de auditoria e monitoramento de eventos de segurança.
 
 ## 🚨 Conclusão
 
-O projeto ND Express apresenta **vulnerabilidades críticas** que requerem ação imediata. A exposição de chaves de API e a ausência de autenticação representam riscos significativos que podem resultar em:
+O projeto ND Express apresenta **vulnerabilidades críticas** que requerem ação
+imediata. A exposição de chaves de API e a ausência de autenticação representam
+riscos significativos que podem resultar em:
 
 - **Impacto Financeiro:** Uso não autorizado de APIs pagas
 - **Violação de Privacidade:** Acesso a dados financeiros sensíveis
@@ -441,12 +488,14 @@ O projeto ND Express apresenta **vulnerabilidades críticas** que requerem açã
 - **Reputacional:** Perda de confiança em caso de incidente
 
 ### **Ações Imediatas Requeridas:**
+
 1. ⚠️ **Revogar e regenerar** todas as chaves de API expostas
 2. 🔒 **Implementar autenticação** antes de qualquer deploy em produção
 3. 🛡️ **Mover APIs sensíveis** para backend seguro
 4. 📊 **Implementar monitoramento** de segurança básico
 
-**Recomendação:** Não deploy em produção até que as vulnerabilidades críticas sejam corrigidas.
+**Recomendação:** Não deploy em produção até que as vulnerabilidades críticas
+sejam corrigidas.
 
 ---
 

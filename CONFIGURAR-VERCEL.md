@@ -2,7 +2,8 @@
 
 ## 🚨 AÇÃO IMEDIATA NECESSÁRIA
 
-Seu site está online mas **NÃO FUNCIONA** porque as variáveis de ambiente não estão configuradas no Vercel.
+Seu site está online mas **NÃO FUNCIONA** porque as variáveis de ambiente não
+estão configuradas no Vercel.
 
 ## 📋 Passo a Passo (5 minutos)
 
@@ -19,6 +20,7 @@ Seu site está online mas **NÃO FUNCIONA** porque as variáveis de ambiente nã
 3. Adicione as seguintes variáveis:
 
 #### Variável 1: OpenAI API Key
+
 ```
 Name: OPENAI_API_KEY
 Value: sk-proj-SUA_CHAVE_OPENAI_AQUI
@@ -26,6 +28,7 @@ Environments: ✅ Production ✅ Preview ✅ Development
 ```
 
 #### Variável 2: Supabase URL
+
 ```
 Name: SUPABASE_URL
 Value: https://SEU_PROJETO.supabase.co
@@ -33,6 +36,7 @@ Environments: ✅ Production ✅ Preview ✅ Development
 ```
 
 #### Variável 3: Supabase Anonymous Key
+
 ```
 Name: SUPABASE_ANON_KEY
 Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -42,11 +46,13 @@ Environments: ✅ Production ✅ Preview ✅ Development
 ### 3. Onde Encontrar as Chaves
 
 #### 🤖 OpenAI API Key:
+
 1. Acesse [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
 2. Clique em **"Create new secret key"**
 3. Copie a chave (começa com `sk-proj-`)
 
 #### 🗄️ Supabase Credentials:
+
 1. Acesse [supabase.com](https://supabase.com)
 2. Vá no seu projeto
 3. Clique em **"Settings"** → **"API"**
@@ -83,27 +89,20 @@ Environments: ✅ Production ✅ Preview ✅ Development
 
 ### Erros Comuns:
 
-❌ **"OPENAI_CONFIG is not defined"**
-→ Variáveis não configuradas no Vercel
+❌ **"OPENAI_CONFIG is not defined"** → Variáveis não configuradas no Vercel
 
-❌ **"401 Unauthorized"**
-→ Chave da OpenAI inválida
+❌ **"401 Unauthorized"** → Chave da OpenAI inválida
 
-❌ **"Failed to fetch"**
-→ Chave do Supabase inválida
+❌ **"Failed to fetch"** → Chave do Supabase inválida
 
-❌ **"sua-chave-openai-aqui"**
-→ Variáveis não foram substituídas
+❌ **"sua-chave-openai-aqui"** → Variáveis não foram substituídas
 
 ## 🚀 Resultado Esperado
 
 Após configurar corretamente:
 
-✅ Site carrega sem erros
-✅ Botão "Capturar" funciona
-✅ IA analisa imagens
-✅ Dados salvam no banco
-✅ ND carrega automaticamente
+✅ Site carrega sem erros ✅ Botão "Capturar" funciona ✅ IA analisa imagens ✅
+Dados salvam no banco ✅ ND carrega automaticamente
 
 ## 📞 Suporte
 
@@ -116,5 +115,4 @@ Se ainda tiver problemas:
 
 ---
 
-**⏰ Tempo estimado: 5 minutos**
-**🎯 Resultado: Site 100% funcional no Vercel**
+**⏰ Tempo estimado: 5 minutos** **🎯 Resultado: Site 100% funcional no Vercel**

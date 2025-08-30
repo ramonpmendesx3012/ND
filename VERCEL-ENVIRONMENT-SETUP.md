@@ -2,7 +2,8 @@
 
 ## 🚨 Problema Identificado
 
-O site **ND Express** funciona perfeitamente em `localhost:8000` mas não funciona no Vercel (`https://nd-express-ten.vercel.app/`) porque:
+O site **ND Express** funciona perfeitamente em `localhost:8000` mas não
+funciona no Vercel (`https://nd-express-ten.vercel.app/`) porque:
 
 1. **Variáveis de ambiente não configuradas** no Vercel
 2. **Chaves da API** não estão disponíveis em produção
@@ -15,21 +16,23 @@ Baseado no arquivo `config.js`, estas variáveis são obrigatórias:
 ```javascript
 // config.js - Como está configurado
 const OPENAI_CONFIG = {
-    API_KEY: process.env.OPENAI_API_KEY || 'sua-chave-openai-aqui',
-    // ...
+  API_KEY: process.env.OPENAI_API_KEY || 'sua-chave-openai-aqui',
+  // ...
 };
 
 const SUPABASE_CONFIG = {
-    URL: process.env.SUPABASE_URL || 'sua-url-supabase-aqui',
-    ANON_KEY: process.env.SUPABASE_ANON_KEY || 'sua-chave-supabase-aqui'
+  URL: process.env.SUPABASE_URL || 'sua-url-supabase-aqui',
+  ANON_KEY: process.env.SUPABASE_ANON_KEY || 'sua-chave-supabase-aqui',
 };
 ```
 
 ## ⚠️ PROBLEMA CRÍTICO: Frontend vs Backend
 
-**IMPORTANTE**: O código atual está tentando usar `process.env` no frontend (browser), mas isso **NÃO FUNCIONA** em aplicações estáticas!
+**IMPORTANTE**: O código atual está tentando usar `process.env` no frontend
+(browser), mas isso **NÃO FUNCIONA** em aplicações estáticas!
 
 ### Por que não funciona:
+
 - `process.env` é uma variável do Node.js (servidor)
 - No browser, `process.env` é `undefined`
 - Vercel serve arquivos estáticos, não executa Node.js no frontend
@@ -43,15 +46,15 @@ const SUPABASE_CONFIG = {
 ```javascript
 // config.js - Versão para produção
 const OPENAI_CONFIG = {
-    API_KEY: 'sk-proj-SUA_CHAVE_REAL_AQUI',
-    API_URL: 'https://api.openai.com/v1/chat/completions',
-    MODEL: 'gpt-4o',
-    MAX_TOKENS: 500
+  API_KEY: 'sk-proj-SUA_CHAVE_REAL_AQUI',
+  API_URL: 'https://api.openai.com/v1/chat/completions',
+  MODEL: 'gpt-4o',
+  MAX_TOKENS: 500,
 };
 
 const SUPABASE_CONFIG = {
-    URL: 'https://SEU_PROJETO.supabase.co',
-    ANON_KEY: 'SUA_CHAVE_ANONIMA_REAL_AQUI'
+  URL: 'https://SEU_PROJETO.supabase.co',
+  ANON_KEY: 'SUA_CHAVE_ANONIMA_REAL_AQUI',
 };
 ```
 
@@ -124,25 +127,25 @@ console.log('✅ Config gerado com variáveis de ambiente');
 ```javascript
 // api/openai.js
 export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-    try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-            },
-            body: JSON.stringify(req.body)
-        });
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify(req.body),
+    });
 
-        const data = await response.json();
-        res.status(200).json(data);
-    } catch (error) {
-        res.status(500).json({ error: 'API Error' });
-    }
+    const data = await response.json();
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'API Error' });
+  }
 }
 ```
 
@@ -173,23 +176,23 @@ export default async function handler(req, res) {
 ```javascript
 // config.js - Versão temporária para produção
 const OPENAI_CONFIG = {
-    API_KEY: 'SUA_CHAVE_OPENAI_REAL_AQUI',
-    API_URL: 'https://api.openai.com/v1/chat/completions',
-    MODEL: 'gpt-4o',
-    MAX_TOKENS: 500
+  API_KEY: 'SUA_CHAVE_OPENAI_REAL_AQUI',
+  API_URL: 'https://api.openai.com/v1/chat/completions',
+  MODEL: 'gpt-4o',
+  MAX_TOKENS: 500,
 };
 
 const SUPABASE_CONFIG = {
-    URL: 'https://SEU_PROJETO_REAL.supabase.co',
-    ANON_KEY: 'SUA_CHAVE_ANONIMA_REAL_AQUI'
+  URL: 'https://SEU_PROJETO_REAL.supabase.co',
+  ANON_KEY: 'SUA_CHAVE_ANONIMA_REAL_AQUI',
 };
 
 // Exportar configuração
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = OPENAI_CONFIG;
+  module.exports = OPENAI_CONFIG;
 } else {
-    window.OPENAI_CONFIG = OPENAI_CONFIG;
-    window.SUPABASE_CONFIG = SUPABASE_CONFIG;
+  window.OPENAI_CONFIG = OPENAI_CONFIG;
+  window.SUPABASE_CONFIG = SUPABASE_CONFIG;
 }
 ```
 
@@ -214,22 +217,26 @@ git push origin main
 ## 🔒 Considerações de Segurança
 
 ### ⚠️ Riscos da Solução Temporária:
+
 - **Chaves expostas** no código fonte
 - **Visíveis no GitHub** (público)
 - **Acessíveis via DevTools** do browser
 
 ### ✅ Mitigações:
+
 1. **Usar chaves com escopo limitado**
 2. **Monitorar uso das APIs**
 3. **Implementar rate limiting**
 4. **Migrar para Solução 3** (serverless) posteriormente
 
 ### 🔐 Chaves Supabase:
+
 - **ANON_KEY é segura** para frontend (projetada para isso)
 - **Políticas RLS** protegem dados sensíveis
 - **Sem risco de exposição** crítica
 
 ### 🤖 Chaves OpenAI:
+
 - **Maior risco** se exposta
 - **Configurar limites** de uso
 - **Monitorar gastos** regularmente
@@ -237,12 +244,14 @@ git push origin main
 ## 📊 Checklist de Verificação
 
 ### ✅ Antes do Deploy:
+
 - [ ] Variáveis configuradas no Vercel
 - [ ] Chaves válidas e testadas
 - [ ] Limites de API configurados
 - [ ] Backup das chaves originais
 
 ### ✅ Após o Deploy:
+
 - [ ] Site carrega sem erros
 - [ ] Botão "Capturar" funciona
 - [ ] IA analisa imagens corretamente
@@ -250,6 +259,7 @@ git push origin main
 - [ ] ND carrega do banco
 
 ### ✅ Monitoramento:
+
 - [ ] Verificar logs do Vercel
 - [ ] Monitorar uso da OpenAI
 - [ ] Verificar performance do Supabase

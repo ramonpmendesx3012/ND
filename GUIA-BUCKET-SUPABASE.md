@@ -6,7 +6,9 @@
 
 ## 🎯 O que vamos fazer?
 
-Vamos criar um "bucket" (pasta) no Supabase para armazenar as imagens dos comprovantes de despesa. É como criar uma pasta no Google Drive, mas para nossa aplicação.
+Vamos criar um "bucket" (pasta) no Supabase para armazenar as imagens dos
+comprovantes de despesa. É como criar uma pasta no Google Drive, mas para nossa
+aplicação.
 
 ---
 
@@ -37,7 +39,8 @@ Vamos criar um "bucket" (pasta) no Supabase para armazenar as imagens dos compro
    - Você verá um ícone de pasta 📁
    - Está geralmente na seção "Database" ou "Storage"
 
-**💡 Dica:** Se não encontrar, procure por um menu com ícone de três linhas (☰) no canto superior esquerdo.
+**💡 Dica:** Se não encontrar, procure por um menu com ícone de três linhas (☰)
+no canto superior esquerdo.
 
 ---
 
@@ -50,6 +53,7 @@ Vamos criar um "bucket" (pasta) no Supabase para armazenar as imagens dos compro
 2. **Clique em "Create bucket"** ou "New bucket"
 
 3. **Preencha o formulário:**
+
    ```
    📝 Nome do bucket: comprovantes
    🔓 Public bucket: ✅ MARCAR (muito importante!)
@@ -63,7 +67,8 @@ Vamos criar um "bucket" (pasta) no Supabase para armazenar as imagens dos compro
 
 ### **PASSO 4: Configurar como Público**
 
-**⚠️ MUITO IMPORTANTE:** O bucket precisa ser público para a aplicação funcionar.
+**⚠️ MUITO IMPORTANTE:** O bucket precisa ser público para a aplicação
+funcionar.
 
 1. **Após criar o bucket**, você verá ele na lista
 2. **Clique no bucket "comprovantes"**
@@ -85,6 +90,7 @@ Vamos criar um "bucket" (pasta) no Supabase para armazenar as imagens dos compro
 3. **Você precisa criar 2 políticas:**
 
 #### **Política 1: Permitir Upload**
+
 ```
 📝 Nome: Permitir upload público
 🎯 Operation: INSERT
@@ -93,6 +99,7 @@ Vamos criar um "bucket" (pasta) no Supabase para armazenar as imagens dos compro
 ```
 
 #### **Política 2: Permitir Visualização**
+
 ```
 📝 Nome: Permitir visualização pública
 🎯 Operation: SELECT
@@ -123,22 +130,30 @@ Vamos criar um "bucket" (pasta) no Supabase para armazenar as imagens dos compro
 ## 🆘 Problemas Comuns e Soluções
 
 ### **❌ Erro: "Bucket not found"**
-**Solução:** Verifique se o nome está exatamente "comprovantes" (sem espaços, acentos)
+
+**Solução:** Verifique se o nome está exatamente "comprovantes" (sem espaços,
+acentos)
 
 ### **❌ Erro: "Access denied"**
-**Solução:** 
+
+**Solução:**
+
 1. Certifique-se que o bucket está marcado como **público**
 2. Verifique se as políticas foram criadas corretamente
 3. Confirme que o role "anon" tem permissão
 
 ### **❌ Erro: "Upload failed"**
+
 **Solução:**
+
 1. Verifique o tamanho do arquivo (máximo 50MB)
 2. Confirme que é uma imagem (JPG, PNG, WebP)
 3. Teste com uma imagem menor primeiro
 
 ### **❌ Não encontro o Storage**
+
 **Solução:**
+
 1. Procure no menu lateral por "Storage"
 2. Pode estar em "Database" > "Storage"
 3. Tente atualizar a página (F5)
@@ -172,9 +187,11 @@ FOR SELECT USING (bucket_id = 'comprovantes');
 
 ## 🎉 Pronto!
 
-Se seguiu todos os passos, seu bucket "comprovantes" está configurado e pronto para uso!
+Se seguiu todos os passos, seu bucket "comprovantes" está configurado e pronto
+para uso!
 
 ### **Para confirmar:**
+
 - ✅ Bucket "comprovantes" criado
 - ✅ Marcado como público
 - ✅ Políticas de acesso configuradas
@@ -191,7 +208,8 @@ Se seguiu todos os passos, seu bucket "comprovantes" está configurado e pronto 
 3. **Verifique se está no projeto correto** do Supabase
 4. **Tente fazer logout e login** novamente
 
-**Lembre-se:** O bucket "comprovantes" é essencial para a aplicação funcionar. Sem ele, as imagens dos comprovantes não serão salvas!
+**Lembre-se:** O bucket "comprovantes" é essencial para a aplicação funcionar.
+Sem ele, as imagens dos comprovantes não serão salvas!
 
 ---
 

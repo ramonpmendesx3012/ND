@@ -6,35 +6,35 @@ console.log('🔧 Iniciando geração do config.js para produção...');
 
 // Verificar se as variáveis de ambiente estão definidas
 const requiredEnvVars = {
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    SUPABASE_URL: process.env.SUPABASE_URL,
-    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+  SUPABASE_URL: process.env.SUPABASE_URL,
+  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
 };
 
 // Validar variáveis obrigatórias
 const missingVars = [];
 for (const [key, value] of Object.entries(requiredEnvVars)) {
-    if (!value || value === 'undefined') {
-        missingVars.push(key);
-    }
+  if (!value || value === 'undefined') {
+    missingVars.push(key);
+  }
 }
 
 if (missingVars.length > 0) {
-    console.error('❌ Variáveis de ambiente não encontradas:');
-    missingVars.forEach(varName => {
-        console.error(`   - ${varName}`);
-    });
-    console.error('');
-    console.error('💡 Configure as variáveis no Vercel:');
-    console.error('   1. Acesse vercel.com → seu projeto → Settings');
-    console.error('   2. Vá em Environment Variables');
-    console.error('   3. Adicione as variáveis necessárias');
-    console.error('');
-    console.error('📝 Variáveis necessárias:');
-    console.error('   OPENAI_API_KEY=sk-proj-...');
-    console.error('   SUPABASE_URL=https://....supabase.co');
-    console.error('   SUPABASE_ANON_KEY=eyJhbGciOi...');
-    process.exit(1);
+  console.error('❌ Variáveis de ambiente não encontradas:');
+  missingVars.forEach(varName => {
+    console.error(`   - ${varName}`);
+  });
+  console.error('');
+  console.error('💡 Configure as variáveis no Vercel:');
+  console.error('   1. Acesse vercel.com → seu projeto → Settings');
+  console.error('   2. Vá em Environment Variables');
+  console.error('   3. Adicione as variáveis necessárias');
+  console.error('');
+  console.error('📝 Variáveis necessárias:');
+  console.error('   OPENAI_API_KEY=sk-proj-...');
+  console.error('   SUPABASE_URL=https://....supabase.co');
+  console.error('   SUPABASE_ANON_KEY=eyJhbGciOi...');
+  process.exit(1);
 }
 
 // Gerar conteúdo do config.js
@@ -82,28 +82,28 @@ if (typeof module !== 'undefined' && module.exports) {
 const configPath = path.join(__dirname, 'config.js');
 
 try {
-    fs.writeFileSync(configPath, configContent, 'utf8');
-    console.log('✅ config.js gerado com sucesso!');
-    console.log('📍 Localização:', configPath);
-    console.log('');
-    console.log('🔍 Resumo das configurações:');
-    console.log(`   OpenAI API Key: ${requiredEnvVars.OPENAI_API_KEY.substring(0, 20)}...`);
-    console.log(`   Supabase URL: ${requiredEnvVars.SUPABASE_URL}`);
-    console.log(`   Supabase Key: ${requiredEnvVars.SUPABASE_ANON_KEY.substring(0, 20)}...`);
-    console.log('');
-    console.log('🚀 Pronto para deploy no Vercel!');
+  fs.writeFileSync(configPath, configContent, 'utf8');
+  console.log('✅ config.js gerado com sucesso!');
+  console.log('📍 Localização:', configPath);
+  console.log('');
+  console.log('🔍 Resumo das configurações:');
+  console.log(`   OpenAI API Key: ${requiredEnvVars.OPENAI_API_KEY.substring(0, 20)}...`);
+  console.log(`   Supabase URL: ${requiredEnvVars.SUPABASE_URL}`);
+  console.log(`   Supabase Key: ${requiredEnvVars.SUPABASE_ANON_KEY.substring(0, 20)}...`);
+  console.log('');
+  console.log('🚀 Pronto para deploy no Vercel!');
 } catch (error) {
-    console.error('❌ Erro ao escrever config.js:', error.message);
-    process.exit(1);
+  console.error('❌ Erro ao escrever config.js:', error.message);
+  process.exit(1);
 }
 
 // Verificar se o arquivo foi criado corretamente
 if (fs.existsSync(configPath)) {
-    const stats = fs.statSync(configPath);
-    console.log(`📊 Arquivo criado: ${stats.size} bytes`);
+  const stats = fs.statSync(configPath);
+  console.log(`📊 Arquivo criado: ${stats.size} bytes`);
 } else {
-    console.error('❌ Erro: Arquivo config.js não foi criado!');
-    process.exit(1);
+  console.error('❌ Erro: Arquivo config.js não foi criado!');
+  process.exit(1);
 }
 
 console.log('✨ Build concluído com sucesso!');

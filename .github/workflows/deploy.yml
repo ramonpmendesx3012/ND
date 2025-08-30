@@ -2,9 +2,9 @@ name: Deploy to Vercel
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -14,106 +14,106 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: |
-        npm install -g http-server
-        
-    - name: Validate HTML
-      run: |
-        # Verificar se arquivos principais existem
-        test -f index.html
-        test -f script.js
-        test -f styles.css
-        test -f config.js
-        
-    - name: Check JavaScript syntax
-      run: |
-        node -c script.js
-        node -c config.js
-        
-    - name: Validate configuration
-      run: |
-        # Verificar se config.js tem estrutura básica
-        grep -q "SUPABASE_CONFIG" config.js
-        grep -q "OPENAI_CONFIG" config.js
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: |
+          npm install -g http-server
+
+      - name: Validate HTML
+        run: |
+          # Verificar se arquivos principais existem
+          test -f index.html
+          test -f script.js
+          test -f styles.css
+          test -f config.js
+
+      - name: Check JavaScript syntax
+        run: |
+          node -c script.js
+          node -c config.js
+
+      - name: Validate configuration
+        run: |
+          # Verificar se config.js tem estrutura básica
+          grep -q "SUPABASE_CONFIG" config.js
+          grep -q "OPENAI_CONFIG" config.js
 
   deploy-preview:
     name: Deploy Preview
     runs-on: ubuntu-latest
     needs: test
     if: github.event_name == 'pull_request'
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Install Vercel CLI
-      run: npm install --global vercel@latest
-      
-    - name: Pull Vercel Environment Information
-      run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
-      
-    - name: Build Project Artifacts
-      run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
-      
-    - name: Deploy Project Artifacts to Vercel
-      run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
 
   deploy-production:
     name: Deploy Production
     runs-on: ubuntu-latest
     needs: test
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Install Vercel CLI
-      run: npm install --global vercel@latest
-      
-    - name: Pull Vercel Environment Information
-      run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-      
-    - name: Build Project Artifacts
-      run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-      
-    - name: Deploy Project Artifacts to Vercel
-      run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
-      
-    - name: Update deployment status
-      run: |
-        echo "✅ Deploy realizado com sucesso!"
-        echo "🚀 Aplicação disponível em produção"
-        
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Update deployment status
+        run: |
+          echo "✅ Deploy realizado com sucesso!"
+          echo "🚀 Aplicação disponível em produção"
+
   notify:
     name: Notify Deployment
     runs-on: ubuntu-latest
     needs: [deploy-production]
     if: always() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-    
+
     steps:
-    - name: Deployment Success
-      if: needs.deploy-production.result == 'success'
-      run: |
-        echo "🎉 Deploy do ND Express realizado com sucesso!"
-        echo "📱 Aplicação atualizada em produção"
-        echo "🔗 Acesse: https://nd-express.vercel.app"
-        
-    - name: Deployment Failed
-      if: needs.deploy-production.result == 'failure'
-      run: |
-        echo "❌ Falha no deploy do ND Express"
-        echo "🔍 Verifique os logs para mais detalhes"
-        exit 1
+      - name: Deployment Success
+        if: needs.deploy-production.result == 'success'
+        run: |
+          echo "🎉 Deploy do ND Express realizado com sucesso!"
+          echo "📱 Aplicação atualizada em produção"
+          echo "🔗 Acesse: https://nd-express.vercel.app"
+
+      - name: Deployment Failed
+        if: needs.deploy-production.result == 'failure'
+        run: |
+          echo "❌ Falha no deploy do ND Express"
+          echo "🔍 Verifique os logs para mais detalhes"
+          exit 1

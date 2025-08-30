@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+
 # ND Express - Sistema de Gestão de Notas de Despesa
 
 ![ND Express](https://img.shields.io/badge/Status-Produção-green)
@@ -7,13 +8,18 @@
 
 ## 📋 Sobre o Projeto
 
-O **ND Express** é um sistema moderno e inteligente para gestão de notas de despesa, desenvolvido com tecnologias de ponta e integração com Inteligência Artificial para automatizar o processamento de comprovantes.
+O **ND Express** é um sistema moderno e inteligente para gestão de notas de
+despesa, desenvolvido com tecnologias de ponta e integração com Inteligência
+Artificial para automatizar o processamento de comprovantes.
 
 ### 🎯 Principais Funcionalidades
 
-- **📸 Análise Automática de Comprovantes**: Utiliza OpenAI GPT-4 Vision para extrair dados automaticamente
-- **💰 Gestão de Adiantamentos**: Controle completo de valores antecipados e saldos
-- **📊 Exportação Excel**: Relatórios profissionais em formato .xlsx com hiperlinks funcionais
+- **📸 Análise Automática de Comprovantes**: Utiliza OpenAI GPT-4 Vision para
+  extrair dados automaticamente
+- **💰 Gestão de Adiantamentos**: Controle completo de valores antecipados e
+  saldos
+- **📊 Exportação Excel**: Relatórios profissionais em formato .xlsx com
+  hiperlinks funcionais
 - **🔄 Persistência em Tempo Real**: Dados salvos automaticamente no Supabase
 - **🎨 Interface Moderna**: Design responsivo e intuitivo
 - **📱 PWA Ready**: Funciona como aplicativo móvel
@@ -21,16 +27,19 @@ O **ND Express** é um sistema moderno e inteligente para gestão de notas de de
 ## 🚀 Tecnologias Utilizadas
 
 ### Frontend
+
 - **HTML5/CSS3/JavaScript**: Base da aplicação
 - **ExcelJS**: Geração de relatórios Excel
 - **PWA**: Service Worker para funcionalidade offline
 
 ### Backend & Serviços
+
 - **Supabase**: Banco de dados PostgreSQL e Storage
 - **OpenAI GPT-4 Vision**: Análise inteligente de imagens
 - **Vercel**: Deploy e hospedagem
 
 ### Integrações
+
 - **Supabase Storage**: Armazenamento seguro de comprovantes
 - **OpenAI API**: Processamento de imagens com IA
 - **GitHub Actions**: CI/CD automatizado
@@ -99,6 +108,7 @@ python -m http.server 8000
    - Configure as variáveis de ambiente
 
 3. **Variáveis de Ambiente no Vercel**:
+
    ```
    SUPABASE_URL=sua_url_do_supabase
    SUPABASE_ANON_KEY=sua_chave_anonima_do_supabase
@@ -120,6 +130,7 @@ python -m http.server 8000
 ### 2. Adição de Despesas
 
 #### Método 1: Upload de Comprovante
+
 1. Clique em "Capturar/Upload"
 2. Selecione a imagem do comprovante
 3. A IA extrai automaticamente:
@@ -129,6 +140,7 @@ python -m http.server 8000
    - Descrição inteligente
 
 #### Método 2: Entrada Manual
+
 1. Clique em "Adicionar Manualmente"
 2. Preencha os campos necessários
 3. Confirme a despesa
@@ -153,17 +165,20 @@ python -m http.server 8000
 O sistema utiliza OpenAI GPT-4 Vision com regras específicas:
 
 #### Categorização por Horário
+
 - **Antes das 10:30**: Café da Manhã
 - **10:30 às 15:00**: Almoço
 - **Após 15:00**: Jantar
 
 #### Estabelecimentos Reconhecidos
+
 - **McDonald's, Burger King, KFC, Subway**: Categorização por horário
 - **Uber, 99**: Transporte
 - **Hotéis**: Hospedagem
 - **Outros**: Categoria geral
 
 #### Precisão
+
 - **95% de confiança** para análises da OpenAI
 - **Validação automática** de formatos
 - **Fallback** para entrada manual em caso de erro
@@ -171,6 +186,7 @@ O sistema utiliza OpenAI GPT-4 Vision com regras específicas:
 ## 📊 Estrutura do Banco de Dados
 
 ### Tabela: `nd_viagens`
+
 ```sql
 - id (UUID, PK)
 - numero_nd (TEXT)
@@ -183,6 +199,7 @@ O sistema utiliza OpenAI GPT-4 Vision com regras específicas:
 ```
 
 ### Tabela: `lancamentos`
+
 ```sql
 - id (UUID, PK)
 - nd_id (UUID, FK)
@@ -232,12 +249,14 @@ O sistema utiliza OpenAI GPT-4 Vision com regras específicas:
 ## 📈 Roadmap
 
 ### Versão 1.1
+
 - [ ] Autenticação de usuários
 - [ ] Múltiplas NDs simultâneas
 - [ ] Relatórios avançados
 - [ ] Integração com ERP
 
 ### Versão 1.2
+
 - [ ] App móvel nativo
 - [ ] OCR offline
 - [ ] Sincronização offline
@@ -253,7 +272,8 @@ O sistema utiliza OpenAI GPT-4 Vision com regras específicas:
 
 ## 📝 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais
+detalhes.
 
 ## 👨‍💻 Autor
 
@@ -265,7 +285,8 @@ Para suporte e dúvidas:
 
 - 📧 Email: [seu-email@exemplo.com]
 - 🐛 Issues: [GitHub Issues](https://github.com/ramonpmendesx3012/ND/issues)
-- 📖 Documentação: [Wiki do Projeto](https://github.com/ramonpmendesx3012/ND/wiki)
+- 📖 Documentação:
+  [Wiki do Projeto](https://github.com/ramonpmendesx3012/ND/wiki)
 
 ---
 
@@ -273,8 +294,10 @@ Para suporte e dúvidas:
 
 ---
 
-*Desenvolvido com ❤️ e ☕ por Ramon*
-=======
+# _Desenvolvido com ❤️ e ☕ por Ramon_
+
 # ND
+
 Registro de Notas de Débito
->>>>>>> 68088c12d550c36701c4e50260845f1974edd106
+
+> > > > > > > 68088c12d550c36701c4e50260845f1974edd106

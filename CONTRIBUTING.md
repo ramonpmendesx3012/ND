@@ -2,7 +2,8 @@
 
 🎉 Obrigado por considerar contribuir para o ND Express! 🎉
 
-Este documento fornece diretrizes e informações sobre como contribuir para o projeto.
+Este documento fornece diretrizes e informações sobre como contribuir para o
+projeto.
 
 ## 📋 Índice
 
@@ -16,7 +17,9 @@ Este documento fornece diretrizes e informações sobre como contribuir para o p
 
 ## 📜 Código de Conduta
 
-Este projeto adere ao [Código de Conduta do Contributor Covenant](https://www.contributor-covenant.org/). Ao participar, você deve seguir este código.
+Este projeto adere ao
+[Código de Conduta do Contributor Covenant](https://www.contributor-covenant.org/).
+Ao participar, você deve seguir este código.
 
 ## 🤝 Como Posso Contribuir?
 
@@ -51,28 +54,33 @@ Este projeto adere ao [Código de Conduta do Contributor Covenant](https://www.c
 ### Configuração
 
 1. **Fork o repositório**
+
    ```bash
    # Clique em "Fork" no GitHub
    ```
 
 2. **Clone seu fork**
+
    ```bash
    git clone https://github.com/SEU_USERNAME/ND.git
    cd ND
    ```
 
 3. **Configure o remote upstream**
+
    ```bash
    git remote add upstream https://github.com/ramonpmendesx3012/ND.git
    ```
 
 4. **Configure as variáveis de ambiente**
+
    ```bash
    cp .env.example .env
    # Edite .env com suas credenciais
    ```
 
 5. **Instale dependências**
+
    ```bash
    npm install
    ```
@@ -93,6 +101,7 @@ Este projeto adere ao [Código de Conduta do Contributor Covenant](https://www.c
 ### 2. Desenvolvimento
 
 1. **Crie uma branch**
+
    ```bash
    git checkout -b feature/nome-da-feature
    # ou
@@ -113,12 +122,14 @@ Este projeto adere ao [Código de Conduta do Contributor Covenant](https://www.c
 ### 3. Enviando a Contribuição
 
 1. **Atualize sua branch**
+
    ```bash
    git fetch upstream
    git rebase upstream/main
    ```
 
 2. **Push para seu fork**
+
    ```bash
    git push origin feature/nome-da-feature
    ```
@@ -188,28 +199,26 @@ chore: mudanças em ferramentas/configuração
 ### Template de Bug Report
 
 ```markdown
-**Descrição do Bug**
-Descrição clara e concisa do bug.
+**Descrição do Bug** Descrição clara e concisa do bug.
 
 **Passos para Reproduzir**
+
 1. Vá para '...'
 2. Clique em '....'
 3. Role para baixo até '....'
 4. Veja o erro
 
-**Comportamento Esperado**
-Descrição do que deveria acontecer.
+**Comportamento Esperado** Descrição do que deveria acontecer.
 
-**Screenshots**
-Se aplicável, adicione screenshots.
+**Screenshots** Se aplicável, adicione screenshots.
 
 **Ambiente:**
- - OS: [e.g. Windows 10]
- - Browser: [e.g. Chrome 91]
- - Versão: [e.g. 1.0.0]
 
-**Contexto Adicional**
-Qualquer outra informação relevante.
+- OS: [e.g. Windows 10]
+- Browser: [e.g. Chrome 91]
+- Versão: [e.g. 1.0.0]
+
+**Contexto Adicional** Qualquer outra informação relevante.
 ```
 
 ## 💡 Sugerindo Melhorias
@@ -297,10 +306,11 @@ Todos os contribuidores serão reconhecidos no README.md e releases.
 
 ## 📄 Licença
 
-Ao contribuir, você concorda que suas contribuições serão licenciadas sob a [Licença MIT](LICENSE).
+Ao contribuir, você concorda que suas contribuições serão licenciadas sob a
+[Licença MIT](LICENSE).
 
 ---
 
 **Obrigado por contribuir! 🚀**
 
-*Juntos, tornamos o ND Express ainda melhor!*
+_Juntos, tornamos o ND Express ainda melhor!_

@@ -1,515 +1,518 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#2563eb">
-    <meta name="description" content="ND Express - Login Seguro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="description" content="ND Express - Login Seguro" />
     <title>ND Express - Login</title>
-    
+
     <!-- Security Headers -->
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="DENY">
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
-    
-    <link rel="stylesheet" href="styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
     <style>
-        /* Estilos específicos para autenticação */
-        .auth-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
+      /* Estilos específicos para autenticação */
+      .auth-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+      }
+
+      .auth-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow:
+          0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        padding: 40px;
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+      }
+
+      .auth-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+      }
+
+      .auth-subtitle {
+        color: #6b7280;
+        margin-bottom: 32px;
+        font-size: 0.95rem;
+      }
+
+      .auth-form {
+        text-align: left;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-label {
+        display: block;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 6px;
+        font-size: 0.9rem;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.2s;
+        box-sizing: border-box;
+      }
+
+      .form-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
+
+      .form-input.error {
+        border-color: #ef4444;
+      }
+
+      .auth-btn {
+        width: 100%;
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 8px;
+      }
+
+      .auth-btn:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
+      }
+
+      .auth-btn:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .auth-link {
+        text-align: center;
+        margin-top: 24px;
+        color: #6b7280;
+        font-size: 0.9rem;
+      }
+
+      .auth-link a {
+        color: #3b82f6;
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .auth-link a:hover {
+        text-decoration: underline;
+      }
+
+      .error-message {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+        display: none;
+      }
+
+      .success-message {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+        display: none;
+      }
+
+      .loading {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 8px;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
         }
-        
-        .auth-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            padding: 40px;
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-        
-        .auth-title {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 8px;
-        }
-        
-        .auth-subtitle {
-            color: #6b7280;
-            margin-bottom: 32px;
-            font-size: 0.95rem;
-        }
-        
-        .auth-form {
-            text-align: left;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-label {
-            display: block;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 6px;
-            font-size: 0.9rem;
-        }
-        
-        .form-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.2s;
-            box-sizing: border-box;
-        }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-        
-        .form-input.error {
-            border-color: #ef4444;
-        }
-        
-        .auth-btn {
-            width: 100%;
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 8px;
-        }
-        
-        .auth-btn:hover {
-            background: #2563eb;
-            transform: translateY(-1px);
-        }
-        
-        .auth-btn:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .auth-link {
-            text-align: center;
-            margin-top: 24px;
-            color: #6b7280;
-            font-size: 0.9rem;
-        }
-        
-        .auth-link a {
-            color: #3b82f6;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        .auth-link a:hover {
-            text-decoration: underline;
-        }
-        
-        .error-message {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-            display: none;
-        }
-        
-        .success-message {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #166534;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-            display: none;
-        }
-        
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #ffffff;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 8px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .password-toggle {
-            position: relative;
-        }
-        
-        .password-toggle-btn {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #6b7280;
-            cursor: pointer;
-            padding: 4px;
-        }
-        
-        .hidden {
-            display: none;
-        }
+      }
+
+      .password-toggle {
+        position: relative;
+      }
+
+      .password-toggle-btn {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 4px;
+      }
+
+      .hidden {
+        display: none;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="auth-container">
-        <div class="auth-card">
-            <h1 class="auth-title">ND Express</h1>
-            <p class="auth-subtitle">Sistema Seguro de Gestão de Despesas</p>
-            
-            <div id="errorMessage" class="error-message"></div>
-            <div id="successMessage" class="success-message"></div>
-            
-            <!-- Formulário de Login -->
-            <form id="loginForm" class="auth-form">
-                <div class="form-group">
-                    <label for="email" class="form-label">Email:</label>
-                    <input 
-                        type="email" 
-                        id="email" 
-                        class="form-input" 
-                        placeholder="seu@email.com"
-                        required 
-                        autocomplete="email"
-                    >
-                </div>
-                
-                <div class="form-group">
-                    <label for="password" class="form-label">Senha:</label>
-                    <div class="password-toggle">
-                        <input 
-                            type="password" 
-                            id="password" 
-                            class="form-input" 
-                            placeholder="Sua senha"
-                            required 
-                            autocomplete="current-password"
-                        >
-                        <button type="button" class="password-toggle-btn" onclick="togglePassword()">
-                            👁️
-                        </button>
-                    </div>
-                </div>
-                
-                <button type="submit" id="loginBtn" class="auth-btn">
-                    <span id="loginBtnText">Entrar</span>
-                </button>
-            </form>
-            
-            <!-- Formulário de Registro -->
-            <form id="registerForm" class="auth-form hidden">
-                <div class="form-group">
-                    <label for="regEmail" class="form-label">Email:</label>
-                    <input 
-                        type="email" 
-                        id="regEmail" 
-                        class="form-input" 
-                        placeholder="seu@email.com"
-                        required 
-                        autocomplete="email"
-                    >
-                </div>
-                
-                <div class="form-group">
-                    <label for="regPassword" class="form-label">Senha:</label>
-                    <div class="password-toggle">
-                        <input 
-                            type="password" 
-                            id="regPassword" 
-                            class="form-input" 
-                            placeholder="Mínimo 6 caracteres"
-                            required 
-                            autocomplete="new-password"
-                            minlength="6"
-                        >
-                        <button type="button" class="password-toggle-btn" onclick="togglePassword('regPassword')">
-                            👁️
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="regPasswordConfirm" class="form-label">Confirmar Senha:</label>
-                    <div class="password-toggle">
-                        <input 
-                            type="password" 
-                            id="regPasswordConfirm" 
-                            class="form-input" 
-                            placeholder="Confirme sua senha"
-                            required 
-                            autocomplete="new-password"
-                            minlength="6"
-                        >
-                        <button type="button" class="password-toggle-btn" onclick="togglePassword('regPasswordConfirm')">
-                            👁️
-                        </button>
-                    </div>
-                </div>
-                
-                <button type="submit" id="registerBtn" class="auth-btn">
-                    <span id="registerBtnText">Criar Conta</span>
-                </button>
-            </form>
-            
-            <div class="auth-link">
-                <span id="switchText">Não tem conta?</span>
-                <a href="#" id="switchLink" onclick="switchForm()">Registre-se</a>
+      <div class="auth-card">
+        <h1 class="auth-title">ND Express</h1>
+        <p class="auth-subtitle">Sistema Seguro de Gestão de Despesas</p>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+
+        <!-- Formulário de Login -->
+        <form id="loginForm" class="auth-form">
+          <div class="form-group">
+            <label for="email" class="form-label">Email:</label>
+            <input
+              type="email"
+              id="email"
+              class="form-input"
+              placeholder="seu@email.com"
+              required
+              autocomplete="email"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">Senha:</label>
+            <div class="password-toggle">
+              <input
+                type="password"
+                id="password"
+                class="form-input"
+                placeholder="Sua senha"
+                required
+                autocomplete="current-password"
+              />
+              <button type="button" class="password-toggle-btn" onclick="togglePassword()">👁️</button>
             </div>
-            
-            <div class="auth-link" style="margin-top: 12px;">
-                <a href="#" onclick="showForgotPassword()">Esqueceu a senha?</a>
+          </div>
+
+          <button type="submit" id="loginBtn" class="auth-btn">
+            <span id="loginBtnText">Entrar</span>
+          </button>
+        </form>
+
+        <!-- Formulário de Registro -->
+        <form id="registerForm" class="auth-form hidden">
+          <div class="form-group">
+            <label for="regEmail" class="form-label">Email:</label>
+            <input
+              type="email"
+              id="regEmail"
+              class="form-input"
+              placeholder="seu@email.com"
+              required
+              autocomplete="email"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="regPassword" class="form-label">Senha:</label>
+            <div class="password-toggle">
+              <input
+                type="password"
+                id="regPassword"
+                class="form-input"
+                placeholder="Mínimo 6 caracteres"
+                required
+                autocomplete="new-password"
+                minlength="6"
+              />
+              <button type="button" class="password-toggle-btn" onclick="togglePassword('regPassword')">👁️</button>
             </div>
+          </div>
+
+          <div class="form-group">
+            <label for="regPasswordConfirm" class="form-label">Confirmar Senha:</label>
+            <div class="password-toggle">
+              <input
+                type="password"
+                id="regPasswordConfirm"
+                class="form-input"
+                placeholder="Confirme sua senha"
+                required
+                autocomplete="new-password"
+                minlength="6"
+              />
+              <button type="button" class="password-toggle-btn" onclick="togglePassword('regPasswordConfirm')">
+                👁️
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" id="registerBtn" class="auth-btn">
+            <span id="registerBtnText">Criar Conta</span>
+          </button>
+        </form>
+
+        <div class="auth-link">
+          <span id="switchText">Não tem conta?</span>
+          <a href="#" id="switchLink" onclick="switchForm()">Registre-se</a>
         </div>
+
+        <div class="auth-link" style="margin-top: 12px">
+          <a href="#" onclick="showForgotPassword()">Esqueceu a senha?</a>
+        </div>
+      </div>
     </div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <script src="auth.js"></script>
-    
+
     <script>
-        let isLoginMode = true;
-        
-        // Aguardar carregamento completo
-        document.addEventListener('DOMContentLoaded', function() {
-            // Verificar se já está autenticado
-            if (window.authManager) {
-                redirectIfAuthenticated();
-            }
-            
-            // Configurar event listeners
-            setupEventListeners();
-            
-            // Focar no campo de email
-            document.getElementById('email').focus();
-        });
-        
-        function setupEventListeners() {
-            // Login form
-            document.getElementById('loginForm').addEventListener('submit', handleLogin);
-            
-            // Register form
-            document.getElementById('registerForm').addEventListener('submit', handleRegister);
-            
-            // Enter key para submeter
-            document.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    if (isLoginMode) {
-                        handleLogin(e);
-                    } else {
-                        handleRegister(e);
-                    }
-                }
-            });
+      let isLoginMode = true;
+
+      // Aguardar carregamento completo
+      document.addEventListener('DOMContentLoaded', function () {
+        // Verificar se já está autenticado
+        if (window.authManager) {
+          redirectIfAuthenticated();
         }
-        
-        async function handleLogin(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            
-            if (!email || !password) {
-                showError('Por favor, preencha todos os campos.');
-                return;
-            }
-            
-            setLoading(true, 'loginBtn', 'loginBtnText', 'Entrando...');
-            hideMessages();
-            
-            try {
-                const result = await window.authManager.signIn(email, password);
-                
-                if (result.success) {
-                    showSuccess('Login realizado com sucesso! Redirecionando...');
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 1000);
-                } else {
-                    showError(result.error);
-                }
-            } catch (error) {
-                console.error('Erro no login:', error);
-                showError('Erro interno. Tente novamente.');
-            } finally {
-                setLoading(false, 'loginBtn', 'loginBtnText', 'Entrar');
-            }
-        }
-        
-        async function handleRegister(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('regEmail').value.trim();
-            const password = document.getElementById('regPassword').value;
-            const passwordConfirm = document.getElementById('regPasswordConfirm').value;
-            
-            if (!email || !password || !passwordConfirm) {
-                showError('Por favor, preencha todos os campos.');
-                return;
-            }
-            
-            if (password !== passwordConfirm) {
-                showError('As senhas não coincidem.');
-                return;
-            }
-            
-            if (password.length < 6) {
-                showError('A senha deve ter pelo menos 6 caracteres.');
-                return;
-            }
-            
-            setLoading(true, 'registerBtn', 'registerBtnText', 'Criando conta...');
-            hideMessages();
-            
-            try {
-                const result = await window.authManager.signUp(email, password);
-                
-                if (result.success) {
-                    showSuccess(result.message || 'Conta criada com sucesso! Verifique seu email.');
-                    // Limpar formulário
-                    document.getElementById('registerForm').reset();
-                    // Voltar para login após 3 segundos
-                    setTimeout(() => {
-                        switchForm();
-                    }, 3000);
-                } else {
-                    showError(result.error);
-                }
-            } catch (error) {
-                console.error('Erro no registro:', error);
-                showError('Erro interno. Tente novamente.');
-            } finally {
-                setLoading(false, 'registerBtn', 'registerBtnText', 'Criar Conta');
-            }
-        }
-        
-        function switchForm() {
-            const loginForm = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
-            const switchText = document.getElementById('switchText');
-            const switchLink = document.getElementById('switchLink');
-            
-            hideMessages();
-            
+
+        // Configurar event listeners
+        setupEventListeners();
+
+        // Focar no campo de email
+        document.getElementById('email').focus();
+      });
+
+      function setupEventListeners() {
+        // Login form
+        document.getElementById('loginForm').addEventListener('submit', handleLogin);
+
+        // Register form
+        document.getElementById('registerForm').addEventListener('submit', handleRegister);
+
+        // Enter key para submeter
+        document.addEventListener('keypress', function (e) {
+          if (e.key === 'Enter') {
             if (isLoginMode) {
-                // Mudar para registro
-                loginForm.classList.add('hidden');
-                registerForm.classList.remove('hidden');
-                switchText.textContent = 'Já tem conta?';
-                switchLink.textContent = 'Faça login';
-                document.getElementById('regEmail').focus();
-                isLoginMode = false;
+              handleLogin(e);
             } else {
-                // Mudar para login
-                registerForm.classList.add('hidden');
-                loginForm.classList.remove('hidden');
-                switchText.textContent = 'Não tem conta?';
-                switchLink.textContent = 'Registre-se';
-                document.getElementById('email').focus();
-                isLoginMode = true;
+              handleRegister(e);
             }
+          }
+        });
+      }
+
+      async function handleLogin(e) {
+        e.preventDefault();
+
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!email || !password) {
+          showError('Por favor, preencha todos os campos.');
+          return;
         }
-        
-        function togglePassword(fieldId = 'password') {
-            const field = document.getElementById(fieldId);
-            const type = field.getAttribute('type') === 'password' ? 'text' : 'password';
-            field.setAttribute('type', type);
-        }
-        
-        function showForgotPassword() {
-            const email = prompt('Digite seu email para recuperação de senha:');
-            if (email && email.trim()) {
-                // TODO: Implementar recuperação de senha
-                alert('Funcionalidade de recuperação de senha será implementada em breve.');
-            }
-        }
-        
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            
-            // Auto-hide após 5 segundos
+
+        setLoading(true, 'loginBtn', 'loginBtnText', 'Entrando...');
+        hideMessages();
+
+        try {
+          const result = await window.authManager.signIn(email, password);
+
+          if (result.success) {
+            showSuccess('Login realizado com sucesso! Redirecionando...');
             setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 5000);
+              window.location.href = 'index.html';
+            }, 1000);
+          } else {
+            showError(result.error);
+          }
+        } catch (error) {
+          console.error('Erro no login:', error);
+          showError('Erro interno. Tente novamente.');
+        } finally {
+          setLoading(false, 'loginBtn', 'loginBtnText', 'Entrar');
         }
-        
-        function showSuccess(message) {
-            const successDiv = document.getElementById('successMessage');
-            successDiv.textContent = message;
-            successDiv.style.display = 'block';
+      }
+
+      async function handleRegister(e) {
+        e.preventDefault();
+
+        const email = document.getElementById('regEmail').value.trim();
+        const password = document.getElementById('regPassword').value;
+        const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+
+        if (!email || !password || !passwordConfirm) {
+          showError('Por favor, preencha todos os campos.');
+          return;
         }
-        
-        function hideMessages() {
-            document.getElementById('errorMessage').style.display = 'none';
-            document.getElementById('successMessage').style.display = 'none';
+
+        if (password !== passwordConfirm) {
+          showError('As senhas não coincidem.');
+          return;
         }
-        
-        function setLoading(loading, btnId, textId, loadingText) {
-            const btn = document.getElementById(btnId);
-            const text = document.getElementById(textId);
-            
-            if (loading) {
-                btn.disabled = true;
-                text.innerHTML = `<span class="loading"></span>${loadingText}`;
-            } else {
-                btn.disabled = false;
-                text.textContent = loadingText;
-            }
+
+        if (password.length < 6) {
+          showError('A senha deve ter pelo menos 6 caracteres.');
+          return;
         }
-        
-        // Prevenir ataques de força bruta
-        let loginAttempts = 0;
-        const maxAttempts = 5;
-        
-        function checkLoginAttempts() {
-            loginAttempts++;
-            if (loginAttempts >= maxAttempts) {
-                showError('Muitas tentativas de login. Aguarde 5 minutos.');
-                setTimeout(() => {
-                    loginAttempts = 0;
-                }, 5 * 60 * 1000); // 5 minutos
-                return false;
-            }
-            return true;
+
+        setLoading(true, 'registerBtn', 'registerBtnText', 'Criando conta...');
+        hideMessages();
+
+        try {
+          const result = await window.authManager.signUp(email, password);
+
+          if (result.success) {
+            showSuccess(result.message || 'Conta criada com sucesso! Verifique seu email.');
+            // Limpar formulário
+            document.getElementById('registerForm').reset();
+            // Voltar para login após 3 segundos
+            setTimeout(() => {
+              switchForm();
+            }, 3000);
+          } else {
+            showError(result.error);
+          }
+        } catch (error) {
+          console.error('Erro no registro:', error);
+          showError('Erro interno. Tente novamente.');
+        } finally {
+          setLoading(false, 'registerBtn', 'registerBtnText', 'Criar Conta');
         }
+      }
+
+      function switchForm() {
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const switchText = document.getElementById('switchText');
+        const switchLink = document.getElementById('switchLink');
+
+        hideMessages();
+
+        if (isLoginMode) {
+          // Mudar para registro
+          loginForm.classList.add('hidden');
+          registerForm.classList.remove('hidden');
+          switchText.textContent = 'Já tem conta?';
+          switchLink.textContent = 'Faça login';
+          document.getElementById('regEmail').focus();
+          isLoginMode = false;
+        } else {
+          // Mudar para login
+          registerForm.classList.add('hidden');
+          loginForm.classList.remove('hidden');
+          switchText.textContent = 'Não tem conta?';
+          switchLink.textContent = 'Registre-se';
+          document.getElementById('email').focus();
+          isLoginMode = true;
+        }
+      }
+
+      function togglePassword(fieldId = 'password') {
+        const field = document.getElementById(fieldId);
+        const type = field.getAttribute('type') === 'password' ? 'text' : 'password';
+        field.setAttribute('type', type);
+      }
+
+      function showForgotPassword() {
+        const email = prompt('Digite seu email para recuperação de senha:');
+        if (email && email.trim()) {
+          // TODO: Implementar recuperação de senha
+          alert('Funcionalidade de recuperação de senha será implementada em breve.');
+        }
+      }
+
+      function showError(message) {
+        const errorDiv = document.getElementById('errorMessage');
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+
+        // Auto-hide após 5 segundos
+        setTimeout(() => {
+          errorDiv.style.display = 'none';
+        }, 5000);
+      }
+
+      function showSuccess(message) {
+        const successDiv = document.getElementById('successMessage');
+        successDiv.textContent = message;
+        successDiv.style.display = 'block';
+      }
+
+      function hideMessages() {
+        document.getElementById('errorMessage').style.display = 'none';
+        document.getElementById('successMessage').style.display = 'none';
+      }
+
+      function setLoading(loading, btnId, textId, loadingText) {
+        const btn = document.getElementById(btnId);
+        const text = document.getElementById(textId);
+
+        if (loading) {
+          btn.disabled = true;
+          text.innerHTML = `<span class="loading"></span>${loadingText}`;
+        } else {
+          btn.disabled = false;
+          text.textContent = loadingText;
+        }
+      }
+
+      // Prevenir ataques de força bruta
+      let loginAttempts = 0;
+      const maxAttempts = 5;
+
+      function checkLoginAttempts() {
+        loginAttempts++;
+        if (loginAttempts >= maxAttempts) {
+          showError('Muitas tentativas de login. Aguarde 5 minutos.');
+          setTimeout(
+            () => {
+              loginAttempts = 0;
+            },
+            5 * 60 * 1000
+          ); // 5 minutos
+          return false;
+        }
+        return true;
+      }
     </script>
-</body>
+  </body>
 </html>

@@ -1,6 +1,7 @@
 # 🗄️ Configuração Completa do Supabase - ND Express
 
-Este guia fornece instruções passo a passo para configurar o banco de dados Supabase para o sistema ND Express.
+Este guia fornece instruções passo a passo para configurar o banco de dados
+Supabase para o sistema ND Express.
 
 ## 📋 Pré-requisitos
 
@@ -54,21 +55,24 @@ FOR SELECT USING (bucket_id = 'comprovantes');
 
 1. **Verificar Tabelas Criadas**
    - Execute no SQL Editor:
+
 ```sql
-SELECT table_name FROM information_schema.tables 
-WHERE table_schema = 'public' 
+SELECT table_name FROM information_schema.tables
+WHERE table_schema = 'public'
 AND table_name IN ('nd_viagens', 'lancamentos');
 ```
 
 2. **Verificar Políticas RLS**
    - Execute no SQL Editor:
+
 ```sql
-SELECT tablename, policyname FROM pg_policies 
+SELECT tablename, policyname FROM pg_policies
 WHERE schemaname = 'public';
 ```
 
 3. **Testar Inserção de Dados**
    - Execute no SQL Editor:
+
 ```sql
 SELECT * FROM public.nd_viagens;
 ```
@@ -76,38 +80,43 @@ SELECT * FROM public.nd_viagens;
 ## 📊 Estrutura do Banco de Dados
 
 ### **Tabela: `nd_viagens`**
-| Campo | Tipo | Descrição |
-|-------|------|----------|
-| id | UUID | Chave primária |
-| numero_nd | TEXT | Número da ND (ex: ND001) |
-| descricao | TEXT | Descrição da viagem/evento |
-| status | TEXT | 'aberta' ou 'fechada' |
-| total_calculado | NUMERIC | Total automático via trigger |
-| created_at | TIMESTAMPTZ | Data de criação |
-| updated_at | TIMESTAMPTZ | Data de atualização |
+
+| Campo           | Tipo        | Descrição                    |
+| --------------- | ----------- | ---------------------------- |
+| id              | UUID        | Chave primária               |
+| numero_nd       | TEXT        | Número da ND (ex: ND001)     |
+| descricao       | TEXT        | Descrição da viagem/evento   |
+| status          | TEXT        | 'aberta' ou 'fechada'        |
+| total_calculado | NUMERIC     | Total automático via trigger |
+| created_at      | TIMESTAMPTZ | Data de criação              |
+| updated_at      | TIMESTAMPTZ | Data de atualização          |
 
 ### **Tabela: `lancamentos`**
-| Campo | Tipo | Descrição |
-|-------|------|----------|
-| id | UUID | Chave primária |
-| nd_id | UUID | Referência para nd_viagens |
-| data_despesa | DATE | Data da despesa |
-| valor | NUMERIC | Valor da despesa |
-| categoria | TEXT | alimentacao, deslocamento, hospedagem, outros |
-| descricao | TEXT | Descrição livre da despesa |
-| estabelecimento | TEXT | Nome do estabelecimento |
-| imagem_url | TEXT | URL do comprovante |
-| confianca | INTEGER | Nível de confiança da IA (0-100) |
-| created_at | TIMESTAMPTZ | Data de criação |
+
+| Campo           | Tipo        | Descrição                                     |
+| --------------- | ----------- | --------------------------------------------- |
+| id              | UUID        | Chave primária                                |
+| nd_id           | UUID        | Referência para nd_viagens                    |
+| data_despesa    | DATE        | Data da despesa                               |
+| valor           | NUMERIC     | Valor da despesa                              |
+| categoria       | TEXT        | alimentacao, deslocamento, hospedagem, outros |
+| descricao       | TEXT        | Descrição livre da despesa                    |
+| estabelecimento | TEXT        | Nome do estabelecimento                       |
+| imagem_url      | TEXT        | URL do comprovante                            |
+| confianca       | INTEGER     | Nível de confiança da IA (0-100)              |
+| created_at      | TIMESTAMPTZ | Data de criação                               |
 
 ## 🔧 Funcionalidades Automáticas
 
 ### **Trigger de Atualização de Total**
+
 - **Função**: `atualizar_total_nd()`
 - **Trigger**: `on_lancamento_change`
-- **Ação**: Atualiza automaticamente o `total_calculado` da ND quando lançamentos são inseridos, atualizados ou removidos
+- **Ação**: Atualiza automaticamente o `total_calculado` da ND quando
+  lançamentos são inseridos, atualizados ou removidos
 
 ### **Políticas de Segurança (RLS)**
+
 - **Acesso Público**: Configurado para permitir operações sem autenticação
 - **Ideal para**: Protótipos e aplicações internas
 - **Produção**: Considere implementar autenticação baseada em usuário
@@ -115,20 +124,22 @@ SELECT * FROM public.nd_viagens;
 ## 🧪 Testes Recomendados
 
 ### **1. Teste de Inserção de ND**
+
 ```sql
 INSERT INTO public.nd_viagens (numero_nd, descricao)
 VALUES ('ND002', 'Teste de Configuração');
 ```
 
 ### **2. Teste de Inserção de Lançamento**
+
 ```sql
 INSERT INTO public.lancamentos (
-    nd_id, 
-    data_despesa, 
-    valor, 
-    categoria, 
-    descricao, 
-    estabelecimento, 
+    nd_id,
+    data_despesa,
+    valor,
+    categoria,
+    descricao,
+    estabelecimento,
     imagem_url
 ) VALUES (
     (SELECT id FROM public.nd_viagens WHERE numero_nd = 'ND002'),
@@ -142,33 +153,37 @@ INSERT INTO public.lancamentos (
 ```
 
 ### **3. Verificar Trigger de Total**
+
 ```sql
-SELECT numero_nd, total_calculado 
-FROM public.nd_viagens 
+SELECT numero_nd, total_calculado
+FROM public.nd_viagens
 WHERE numero_nd = 'ND002';
 ```
 
 ## 📱 Configuração da Aplicação
 
-Após configurar o banco, atualize o arquivo `config.js` com as credenciais do seu projeto:
+Após configurar o banco, atualize o arquivo `config.js` com as credenciais do
+seu projeto:
 
 ```javascript
 const SUPABASE_CONFIG = {
-    URL: 'https://SEU-PROJETO.supabase.co',
-    ANON_KEY: 'SUA-CHAVE-ANONIMA'
+  URL: 'https://SEU-PROJETO.supabase.co',
+  ANON_KEY: 'SUA-CHAVE-ANONIMA',
 };
 ```
 
 ## 🔍 Queries Úteis para Desenvolvimento
 
 ### **Listar todas as NDs**
+
 ```sql
-SELECT numero_nd, descricao, status, total_calculado, created_at 
-FROM public.nd_viagens 
+SELECT numero_nd, descricao, status, total_calculado, created_at
+FROM public.nd_viagens
 ORDER BY created_at DESC;
 ```
 
 ### **Relatório por Categoria**
+
 ```sql
 SELECT categoria, COUNT(*) as quantidade, SUM(valor) as total
 FROM public.lancamentos
@@ -177,8 +192,9 @@ ORDER BY total DESC;
 ```
 
 ### **Lançamentos de uma ND específica**
+
 ```sql
-SELECT l.*, nv.numero_nd 
+SELECT l.*, nv.numero_nd
 FROM public.lancamentos l
 JOIN public.nd_viagens nv ON l.nd_id = nv.id
 WHERE nv.numero_nd = 'ND001'
@@ -188,12 +204,15 @@ ORDER BY l.data_despesa DESC;
 ## ⚠️ Considerações de Segurança
 
 ### **Para Produção:**
-1. **Implementar Autenticação**: Substituir políticas públicas por baseadas em `auth.uid()`
+
+1. **Implementar Autenticação**: Substituir políticas públicas por baseadas em
+   `auth.uid()`
 2. **Validação de Dados**: Adicionar validações mais rigorosas
 3. **Backup Regular**: Configurar backups automáticos
 4. **Monitoramento**: Implementar logs e alertas
 
 ### **Para Desenvolvimento:**
+
 - As configurações atuais são ideais para prototipagem
 - Acesso público facilita testes e desenvolvimento
 - Triggers garantem consistência dos dados
@@ -208,4 +227,5 @@ ORDER BY l.data_despesa DESC;
 
 ---
 
-**🚀 Configuração concluída! O banco de dados está pronto para uso com o ND Express.**
+**🚀 Configuração concluída! O banco de dados está pronto para uso com o ND
+Express.**

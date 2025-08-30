@@ -9,6 +9,8 @@
     "build": "node build-config.js",
     "test": "node -c script.js && node -c config.js",
     "lint": "echo 'Linting JavaScript files' && node -c script.js && node -c config.js",
+    "format": "prettier --write \"**/*.{js,html,css,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{js,html,css,json,md,yml,yaml}\"",
     "deploy": "vercel --prod",
     "preview": "vercel",
     "build:local": "echo 'Local build - using existing config.js'",
@@ -42,9 +44,9 @@
     "node": ">=18.0.0"
   },
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "prettier": "^3.6.2"
   },
-  "dependencies": {},
   "browserslist": [
     "> 1%",
     "last 2 versions",
