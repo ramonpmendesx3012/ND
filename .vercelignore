@@ -1,0 +1,53 @@
+# Arquivos de desenvolvimento
+.env
+.env.local
+.env.development
+.env.test
+
+# Arquivos de teste
+src/services/__tests__/
+*.test.js
+*.spec.js
+jest.config.js
+babel.config.js
+
+# Arquivos de validação
+validate_*.js
+validate_*.mjs
+check_*.js
+
+# Arquivos de backup
+backup/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependências
+node_modules/
+
+# Arquivos temporários
+.tmp/
+.cache/
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Arquivos de build local
+build/
+dist/
+
+# Dados locais
+data/
+*.db
+*.sqlite
+*.sqlite3
