@@ -1,4 +1,4 @@
-// ===== VARIÁVEIS GLOBAIS =====
+// Variáveis globais
 let expenses = [];
 let currentImageData = null; // Armazena a imagem em base64 e o nome do arquivo
 let ndCounter = 1;
@@ -15,7 +15,7 @@ const supabase = window.supabase.createClient(SUPABASE_CONFIG.URL, SUPABASE_CONF
 // Variável para armazenar o arquivo original da imagem
 let originalImageFile = null;
 
-// ===== FORMATAÇÃO BRASILEIRA =====
+// Formatação brasileira
 function formatCurrency(value) {
   // Garantir que o valor seja numérico
   const numValue = parseFloat(value) || 0;
@@ -29,15 +29,15 @@ function formatCurrency(value) {
   }).format(numValue);
 }
 
-// ===== REGRAS DE NEGÓCIO - TETO POR CATEGORIA =====
+// Regras de negócio - Teto por categoria
 function applyCategoryLimit(value, description, category = null) {
-  console.log('💰 Aplicando regras de teto por categoria...', { value, description, category });
+  console.log('Aplicando regras de teto por categoria...', { value, description, category });
 
   const numericValue =
     typeof value === 'string' ? parseFloat(value.replace(',', '.')) : parseFloat(value);
 
   if (isNaN(numericValue)) {
-    console.log('❌ Valor inválido, retornando 0');
+    console.log('Valor inválido, retornando 0');
     return 0;
   }
 
@@ -47,7 +47,7 @@ function applyCategoryLimit(value, description, category = null) {
 
   // Verificar se é categoria Alimentação (aplicar teto geral)
   if (category === 'Alimentação') {
-    console.log('🍽️ Categoria Alimentação detectada - verificando tipo de refeição...');
+    console.log('Categoria Alimentação detectada - verificando tipo de refeição...');
 
     // Regra 1: Café da Manhã - Teto de R$ 30,00
     if (
@@ -154,7 +154,7 @@ function formatDate(dateString) {
   return `${day}/${month}/${year}`;
 }
 
-// ===== UTILITÁRIOS =====
+// Utilitários
 // Função para converter arquivo para Base64
 function fileToBase64(file) {
   console.log('📁 Convertendo arquivo para Base64...');
@@ -183,7 +183,7 @@ function fileToBase64(file) {
   });
 }
 
-// ===== PROCESSAMENTO DE IMAGEM =====
+// Processamento de imagem
 async function processImage(file) {
   // Mostrar overlay de carregamento
   showLoadingOverlay(true);
@@ -350,7 +350,7 @@ async function analyzeImageWithOpenAI(imageBase64) {
   }
 }
 
-// ===== MAPEAMENTO DE CATEGORIAS =====
+// Mapeamento de categorias
 function mapDescriptionToCategory(description) {
   const descriptionLower = description.toLowerCase();
 
@@ -408,7 +408,7 @@ function mapDescriptionToCategory(description) {
   return 'Outros';
 }
 
-// ===== PADRONIZAÇÃO DE DESCRIÇÕES =====
+// Padronização de descrições
 function standardizeDescription(originalDescription, category) {
   console.log('📝 Padronizando descrição...', { originalDescription, category });
 
@@ -459,7 +459,7 @@ function standardizeDescription(originalDescription, category) {
   }
 }
 
-// ===== PERSISTÊNCIA DE SESSÃO - CARREGAMENTO DE ND ABERTA =====
+// Persistência de sessão
 async function loadExpensesFromSupabase() {
   console.log('🔄 Iniciando carregamento de sessão...');
 
@@ -593,7 +593,7 @@ async function loadExpensesFromSupabase() {
   }
 }
 
-// ===== NOTIFICAÇÕES =====
+// Notificações
 function showNotification(message, type = 'info') {
   // Remover notificação anterior se existir
   const existingNotification = document.querySelector('.notification');
@@ -651,7 +651,7 @@ function showNotification(message, type = 'info') {
   }, 4000);
 }
 
-// ===== INICIALIZAÇÃO =====
+// Inicialização
 async function init() {
   bindEvents();
   setupAdiantamentoField();
@@ -661,7 +661,7 @@ async function init() {
   await loadExpensesFromSupabase();
 }
 
-// ===== EVENTOS E INTERAÇÕES =====
+// Eventos e interações
 function bindEvents() {
   // Verificar se os elementos existem antes de adicionar eventos
   const captureBtn = document.getElementById('captureBtn');
@@ -760,7 +760,7 @@ function formatValueInput(event) {
   }
 }
 
-// ===== FORMULÁRIO =====
+// Formulário
 function populateForm(data) {
   console.log('📋 Preenchendo formulário com dados da IA:', data);
 
@@ -1061,7 +1061,7 @@ function clearForm() {
   console.log('✅ Formulário limpo com sucesso');
 }
 
-// ===== SUPABASE STORAGE =====
+// Supabase Storage
 async function uploadImageToSupabase(file) {
   try {
     // Gerar nome único para o arquivo
@@ -1086,7 +1086,7 @@ async function uploadImageToSupabase(file) {
   }
 }
 
-// ===== INTERFACE E ATUALIZAÇÕES =====
+// Interface e atualizações
 function showLoadingOverlay(show) {
   const overlay = document.getElementById('loadingOverlay');
   if (overlay && overlay.style) {
@@ -1112,7 +1112,7 @@ function updateTotal() {
   updateTotalizadores();
 }
 
-// ===== GESTÃO DE ADIANTAMENTO E TOTALIZADORES =====
+// Gestão de adiantamento
 function updateTotalizadores() {
   const totalDespesas = expenses.reduce((sum, expense) => sum + expense.value, 0);
 
@@ -1207,7 +1207,7 @@ function setupAdiantamentoField() {
   }
 }
 
-// ===== ATUALIZAÇÃO DA GRID DE LANÇAMENTOS =====
+// Atualização da grid
 function updateExpensesList() {
   console.log('🔄 Atualizando grid de lançamentos...', expenses.length, 'itens');
 
@@ -1268,7 +1268,7 @@ function createExpenseGridRow(expense) {
   return row;
 }
 
-// ===== ORDENAÇÃO DE LANÇAMENTOS =====
+// Ordenação de lançamentos
 function sortExpensesByDateAndCategory(expensesList) {
   console.log('🔄 Ordenando lançamentos por data e categoria...');
 
@@ -1318,7 +1318,7 @@ function sortExpensesByDateAndCategory(expensesList) {
   });
 }
 
-// ===== AÇÕES DA GRID DE LANÇAMENTOS =====
+// Ações da grid
 
 // Função para excluir lançamento
 async function deleteExpense(expenseId) {
@@ -1387,7 +1387,7 @@ function viewExpenseImage(expenseId) {
   }
 }
 
-// ===== DETALHES DO LANÇAMENTO =====
+// Detalhes do lançamento
 function showExpenseDetails(expenseId) {
   console.log('👁️ Mostrando detalhes do lançamento:', expenseId);
 
@@ -1717,7 +1717,7 @@ function closeImageModal() {
   }
 }
 
-// ===== CONTROLES DO VISUALIZADOR DE IMAGEM =====
+// Controles do visualizador
 
 function initializeImageViewer() {
   const image = document.getElementById('viewerImage');
@@ -1821,7 +1821,7 @@ function updateImageTransform() {
   }
 }
 
-// ===== EVENT HANDLERS =====
+// Event handlers
 
 // Mouse wheel para zoom
 function handleWheel(e) {
@@ -1950,7 +1950,7 @@ function handleTouchEnd(e) {
   lastTouchDistance = 0;
 }
 
-// ===== EXPORTAÇÃO =====
+// Exportação
 async function exportND() {
   if (expenses.length === 0) {
     showNotification('Nenhuma despesa para exportar.', 'error');
@@ -2071,7 +2071,7 @@ async function prepareNewND() {
 }
 
 // Função para gerar CSV
-// ===== GERAÇÃO DE ARQUIVO EXCEL (.XLSX) =====
+// Geração de arquivo Excel
 async function generateExcelFile(expenses, ndNumber, description, total, adiantamento) {
   try {
     console.log('📊 Iniciando geração do arquivo Excel...');
@@ -2264,7 +2264,7 @@ async function getImageUrlFromSupabase(expenseId) {
   }
 }
 
-// ===== INICIALIZAÇÃO =====
+// Inicialização da aplicação
 // Inicializar aplicação quando a página carregar
 window.addEventListener('DOMContentLoaded', init);
 

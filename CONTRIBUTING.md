@@ -1,316 +1,149 @@
 # Contribuindo para o ND Express
 
-🎉 Obrigado por considerar contribuir para o ND Express! 🎉
+Obrigado por considerar contribuir para o ND Express! Este documento fornece diretrizes para contribuições.
 
-Este documento fornece diretrizes e informações sobre como contribuir para o
-projeto.
+## 🚀 Como Contribuir
 
-## 📋 Índice
+### Reportando Bugs
 
-- [Código de Conduta](#código-de-conduta)
-- [Como Posso Contribuir?](#como-posso-contribuir)
-- [Configuração do Ambiente de Desenvolvimento](#configuração-do-ambiente-de-desenvolvimento)
-- [Processo de Contribuição](#processo-de-contribuição)
-- [Diretrizes de Código](#diretrizes-de-código)
-- [Reportando Bugs](#reportando-bugs)
-- [Sugerindo Melhorias](#sugerindo-melhorias)
+1. Verifique se o bug já foi reportado nas [Issues](https://github.com/seu-usuario/nd-express/issues)
+2. Se não encontrar, crie uma nova issue com:
+   - Descrição clara do problema
+   - Passos para reproduzir
+   - Comportamento esperado vs atual
+   - Screenshots (se aplicável)
+   - Informações do ambiente (browser, OS, etc.)
 
-## 📜 Código de Conduta
+### Sugerindo Melhorias
 
-Este projeto adere ao
-[Código de Conduta do Contributor Covenant](https://www.contributor-covenant.org/).
-Ao participar, você deve seguir este código.
+1. Abra uma issue com a tag `enhancement`
+2. Descreva claramente a melhoria proposta
+3. Explique por que seria útil para o projeto
+4. Forneça exemplos de uso, se possível
 
-## 🤝 Como Posso Contribuir?
+### Contribuindo com Código
 
-### Tipos de Contribuição
+#### Configuração do Ambiente
 
-- 🐛 **Reportar bugs**
-- 💡 **Sugerir melhorias**
-- 📝 **Melhorar documentação**
-- 🔧 **Corrigir bugs**
-- ✨ **Implementar novas funcionalidades**
-- 🧪 **Escrever testes**
-- 🎨 **Melhorar UI/UX**
-
-### Áreas que Precisam de Ajuda
-
-- [ ] Testes automatizados
-- [ ] Documentação da API
-- [ ] Internacionalização (i18n)
-- [ ] Acessibilidade (a11y)
-- [ ] Performance optimization
-- [ ] Mobile responsiveness
-
-## 🛠️ Configuração do Ambiente de Desenvolvimento
-
-### Pré-requisitos
-
-- Node.js 18+
-- Git
-- Conta no Supabase
-- Chave da API OpenAI
-
-### Configuração
-
-1. **Fork o repositório**
-
+1. Fork o repositório
+2. Clone seu fork:
    ```bash
-   # Clique em "Fork" no GitHub
+   git clone https://github.com/seu-usuario/nd-express.git
+   cd nd-express
    ```
-
-2. **Clone seu fork**
-
-   ```bash
-   git clone https://github.com/SEU_USERNAME/ND.git
-   cd ND
-   ```
-
-3. **Configure o remote upstream**
-
-   ```bash
-   git remote add upstream https://github.com/ramonpmendesx3012/ND.git
-   ```
-
-4. **Configure as variáveis de ambiente**
-
-   ```bash
-   cp .env.example .env
-   # Edite .env com suas credenciais
-   ```
-
-5. **Instale dependências**
-
+3. Instale as dependências:
    ```bash
    npm install
    ```
+4. Configure as variáveis de ambiente (veja README.md)
 
-6. **Execute o projeto**
-   ```bash
-   npm run dev
-   ```
+#### Fluxo de Desenvolvimento
 
-## 🔄 Processo de Contribuição
-
-### 1. Antes de Começar
-
-- Verifique se já existe uma issue relacionada
-- Se não existir, crie uma issue descrevendo o problema/melhoria
-- Aguarde feedback antes de começar a implementar
-
-### 2. Desenvolvimento
-
-1. **Crie uma branch**
-
+1. Crie uma branch para sua feature:
    ```bash
    git checkout -b feature/nome-da-feature
-   # ou
-   git checkout -b fix/nome-do-bug
    ```
-
-2. **Faça suas alterações**
-   - Siga as [diretrizes de código](#diretrizes-de-código)
-   - Escreva commits descritivos
-   - Teste suas alterações
-
-3. **Commit suas mudanças**
+2. Faça suas alterações
+3. Teste suas mudanças:
    ```bash
-   git add .
-   git commit -m "feat: adiciona nova funcionalidade X"
+   npm run test
+   npm run lint
    ```
-
-### 3. Enviando a Contribuição
-
-1. **Atualize sua branch**
-
+4. Commit suas alterações:
    ```bash
-   git fetch upstream
-   git rebase upstream/main
+   git commit -m "feat: adiciona nova funcionalidade"
    ```
-
-2. **Push para seu fork**
-
+5. Push para sua branch:
    ```bash
    git push origin feature/nome-da-feature
    ```
+6. Abra um Pull Request
 
-3. **Crie um Pull Request**
-   - Vá para o GitHub e clique em "New Pull Request"
-   - Preencha o template de PR
-   - Aguarde review
+## 📝 Padrões de Código
 
-## 📝 Diretrizes de Código
+### Estilo de Código
 
-### JavaScript
-
-- Use ES6+ features
-- Prefira `const` e `let` ao invés de `var`
-- Use arrow functions quando apropriado
-- Mantenha funções pequenas e focadas
+- Use Prettier para formatação: `npm run format`
+- Siga as regras do ESLint: `npm run lint`
 - Use nomes descritivos para variáveis e funções
-
-### HTML
-
-- Use HTML5 semântico
-- Mantenha a estrutura acessível
-- Use atributos `alt` em imagens
-- Valide o HTML
-
-### CSS
-
-- Use metodologia BEM para classes
-- Prefira Flexbox/Grid ao invés de floats
-- Use variáveis CSS para cores e espaçamentos
-- Mantenha responsividade mobile-first
+- Adicione comentários para lógica complexa
 
 ### Commits
 
-Use [Conventional Commits](https://www.conventionalcommits.org/):
+Use o padrão [Conventional Commits](https://www.conventionalcommits.org/):
 
-```
-feat: adiciona nova funcionalidade
-fix: corrige bug específico
-docs: atualiza documentação
-style: mudanças de formatação
-refactor: refatora código sem mudar funcionalidade
-test: adiciona ou modifica testes
-chore: mudanças em ferramentas/configuração
-```
+- `feat:` para novas funcionalidades
+- `fix:` para correções de bugs
+- `docs:` para mudanças na documentação
+- `style:` para formatação de código
+- `refactor:` para refatoração
+- `test:` para testes
+- `chore:` para tarefas de manutenção
 
-## 🐛 Reportando Bugs
+### Pull Requests
 
-### Antes de Reportar
-
-- Verifique se o bug já foi reportado
-- Teste na versão mais recente
-- Verifique se não é um problema de configuração
-
-### Como Reportar
-
-1. Use o template de issue para bugs
-2. Inclua informações do ambiente:
-   - OS e versão
-   - Browser e versão
-   - Versão do Node.js
-3. Descreva passos para reproduzir
-4. Inclua screenshots se relevante
-5. Adicione logs de erro
-
-### Template de Bug Report
-
-```markdown
-**Descrição do Bug** Descrição clara e concisa do bug.
-
-**Passos para Reproduzir**
-
-1. Vá para '...'
-2. Clique em '....'
-3. Role para baixo até '....'
-4. Veja o erro
-
-**Comportamento Esperado** Descrição do que deveria acontecer.
-
-**Screenshots** Se aplicável, adicione screenshots.
-
-**Ambiente:**
-
-- OS: [e.g. Windows 10]
-- Browser: [e.g. Chrome 91]
-- Versão: [e.g. 1.0.0]
-
-**Contexto Adicional** Qualquer outra informação relevante.
-```
-
-## 💡 Sugerindo Melhorias
-
-### Antes de Sugerir
-
-- Verifique se a melhoria já foi sugerida
-- Considere se a melhoria se alinha com os objetivos do projeto
-- Pense na implementação e complexidade
-
-### Como Sugerir
-
-1. Use o template de issue para melhorias
-2. Descreva o problema que a melhoria resolve
-3. Descreva a solução proposta
-4. Considere alternativas
-5. Adicione mockups se relevante
+- Use um título descritivo
+- Descreva as mudanças realizadas
+- Referencie issues relacionadas
+- Inclua screenshots para mudanças visuais
+- Certifique-se que todos os testes passam
 
 ## 🧪 Testes
 
 ### Executando Testes
 
 ```bash
-# Testes de sintaxe
-npm test
-
-# Testes manuais
-npm run dev
-# Teste funcionalidades no browser
+npm run test        # Executar todos os testes
+npm run test:watch  # Executar em modo watch
+npm run lint        # Verificar qualidade do código
 ```
 
 ### Escrevendo Testes
 
-- Teste casos de sucesso e falha
-- Use dados de teste realistas
-- Mantenha testes independentes
-- Documente casos de teste complexos
+- Escreva testes para novas funcionalidades
+- Mantenha cobertura de testes alta
+- Use nomes descritivos para os testes
+- Teste casos de sucesso e erro
 
 ## 📚 Documentação
 
-### Atualizando Documentação
+- Atualize o README.md se necessário
+- Documente novas APIs ou funcionalidades
+- Use comentários JSDoc para funções públicas
+- Mantenha a documentação atualizada
 
-- Mantenha README.md atualizado
-- Documente novas funcionalidades
-- Atualize comentários no código
-- Inclua exemplos de uso
+## 🔒 Segurança
 
-### Escrevendo Documentação
+- Nunca commite chaves de API ou senhas
+- Use variáveis de ambiente para dados sensíveis
+- Reporte vulnerabilidades de segurança privadamente
+- Siga as melhores práticas de segurança
 
-- Use linguagem clara e simples
-- Inclua exemplos práticos
-- Mantenha consistência de formato
-- Revise ortografia e gramática
+## 📋 Checklist para Pull Requests
 
-## 🎨 UI/UX
+- [ ] Código segue os padrões do projeto
+- [ ] Testes foram adicionados/atualizados
+- [ ] Documentação foi atualizada
+- [ ] Commits seguem o padrão conventional
+- [ ] Não há conflitos de merge
+- [ ] CI/CD está passando
 
-### Diretrizes de Design
+## 🤝 Código de Conduta
 
-- Mantenha consistência visual
-- Priorize acessibilidade
-- Use design responsivo
-- Teste em diferentes dispositivos
-- Siga princípios de usabilidade
+- Seja respeitoso e inclusivo
+- Aceite críticas construtivas
+- Foque no que é melhor para a comunidade
+- Mantenha discussões técnicas e profissionais
 
-## 📞 Suporte
+## 📞 Dúvidas?
 
-### Onde Buscar Ajuda
+Se tiver dúvidas sobre como contribuir:
 
-- 📖 [Documentação](README.md)
-- 🐛 [Issues](https://github.com/ramonpmendesx3012/ND/issues)
-- 💬 [Discussions](https://github.com/ramonpmendesx3012/ND/discussions)
-
-### Contato
-
-- Email: [seu-email@exemplo.com]
-- GitHub: [@ramonpmendesx3012](https://github.com/ramonpmendesx3012)
-
-## 🏆 Reconhecimento
-
-Todos os contribuidores serão reconhecidos no README.md e releases.
-
-### Hall da Fama
-
-<!-- Contribuidores serão listados aqui -->
-
-## 📄 Licença
-
-Ao contribuir, você concorda que suas contribuições serão licenciadas sob a
-[Licença MIT](LICENSE).
+1. Verifique a documentação existente
+2. Procure em issues fechadas
+3. Abra uma nova issue com a tag `question`
+4. Entre em contato através das issues do GitHub
 
 ---
 
-**Obrigado por contribuir! 🚀**
-
-_Juntos, tornamos o ND Express ainda melhor!_
+**Obrigado por contribuir para o ND Express! 🚀**
