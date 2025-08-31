@@ -86,8 +86,21 @@ module.exports = async function handler(req, res) {
     
     const bucketExists = buckets.some(b => b.name === bucket);
     if (!bucketExists) {
-      console.error(`Bucket '${bucket}' não existe. Buckets disponíveis:`, buckets.map(b => b.name));
-      return res.status(500).json({ error: `Storage bucket '${bucket}' not found` });
+      console.log(`Bucket '${bucket}' não existe. Tentando criar...`);
+      
+      // Tentar criar o bucket
+      const { data: createData, error: createError } = await supabase.storage.createBucket(bucket, {
+        public: true,
+        allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+        fileSizeLimit: 10485760 // 10MB
+      });
+      
+      if (createError) {
+        console.error('Erro ao criar bucket:', createError);
+        return res.status(500).json({ error: `Failed to create storage bucket: ${createError.message}` });
+      }
+      
+      console.log(`✅ Bucket '${bucket}' criado com sucesso`);
     }
     
     // Upload para o Supabase Storage

@@ -12,12 +12,18 @@ class DownloadService {
     try {
       console.log('Iniciando download de comprovantes...');
       
-      // Verificar se há despesas com imagens
-      const expensesWithImages = expenses.filter(expense => 
-        expense.imageUrl && 
-        expense.imageUrl !== 'https://via.placeholder.com/150' &&
-        !expense.imageUrl.includes('placeholder')
-      );
+      // Verificar se há despesas com imagens válidas
+      const expensesWithImages = expenses.filter(expense => {
+        if (!expense.imageUrl) return false;
+        if (expense.imageUrl === 'https://via.placeholder.com/150') return false;
+        if (expense.imageUrl.includes('placeholder')) return false;
+        if (expense.imageUrl.startsWith('blob:')) {
+          // URLs blob locais não podem ser baixadas em ZIP
+          console.warn('Imagem local (blob) detectada, pulando:', expense.imageUrl);
+          return false;
+        }
+        return true;
+      });
       
       if (expensesWithImages.length === 0) {
         throw new Error('Nenhum comprovante encontrado para download');
@@ -203,17 +209,21 @@ class DownloadService {
    * @returns {Object} Informações sobre comprovantes disponíveis
    */
   checkAvailableReceipts(expenses) {
-    const withImages = expenses.filter(expense => 
-      expense.imageUrl && 
-      expense.imageUrl !== 'https://via.placeholder.com/150' &&
-      !expense.imageUrl.includes('placeholder')
-    );
+    const withImages = expenses.filter(expense => {
+      if (!expense.imageUrl) return false;
+      if (expense.imageUrl === 'https://via.placeholder.com/150') return false;
+      if (expense.imageUrl.includes('placeholder')) return false;
+      if (expense.imageUrl.startsWith('blob:')) return false;
+      return true;
+    });
     
-    const withoutImages = expenses.filter(expense => 
-      !expense.imageUrl || 
-      expense.imageUrl === 'https://via.placeholder.com/150' ||
-      expense.imageUrl.includes('placeholder')
-    );
+    const withoutImages = expenses.filter(expense => {
+      if (!expense.imageUrl) return true;
+      if (expense.imageUrl === 'https://via.placeholder.com/150') return true;
+      if (expense.imageUrl.includes('placeholder')) return true;
+      if (expense.imageUrl.startsWith('blob:')) return true;
+      return false;
+    });
     
     return {
       total: expenses.length,
