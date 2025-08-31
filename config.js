@@ -1,21 +1,14 @@
-// ===== CONFIGURAÇÃO SEGURA - ND EXPRESS =====
-// IMPORTANTE: Chaves de API foram movidas para serverless functions por segurança
-// As chamadas para OpenAI agora passam pelo endpoint /api/openai-analyze
+// Configuração segura para frontend - ND Express
+// IMPORTANTE: Nenhuma credencial sensível é exposta aqui
 
-// Configuração da OpenAI API (SEGURA - sem chaves expostas)
+// Configuração da OpenAI API (apenas endpoint público)
 const OPENAI_CONFIG = {
-  API_URL: '/api/openai-analyze', // Endpoint seguro local
+  API_URL: '/api/openai-analyze', // Endpoint seguro
   MODEL: 'gpt-4o',
   MAX_TOKENS: 500,
 };
 
-// Configuração do Supabase
-const SUPABASE_CONFIG = {
-  URL: process.env.SUPABASE_URL || 'https://gkguocajdzoyocraeyjj.supabase.co',
-  ANON_KEY: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrZ3VvY2FqZHpveW9jcmFleWpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMzM3OTQsImV4cCI6MjA3MTkwOTc5NH0.pYNh6Z6fOkJZqzyZWfNnt1xoQgtTKl-4HyoC9djv2FQ',
-};
-
-// Configurações de segurança
+// Configurações de segurança (públicas)
 const SECURITY_CONFIG = {
   MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
   ALLOWED_FILE_TYPES: ['image/jpeg', 'image/png', 'image/webp'],
@@ -25,36 +18,34 @@ const SECURITY_CONFIG = {
   MAX_VALUE: 999999,
 };
 
-// Validação de configuração
+// URLs das APIs backend (sem credenciais)
+const API_CONFIG = {
+  BASE_URL: '/api',
+  ENDPOINTS: {
+    SUPABASE_QUERY: '/api/supabase-query',
+    SUPABASE_INSERT: '/api/supabase-insert',
+    SUPABASE_UPDATE: '/api/supabase-update',
+    SUPABASE_DELETE: '/api/supabase-delete',
+    SUPABASE_UPLOAD: '/api/supabase-upload',
+    OPENAI_ANALYZE: '/api/openai-analyze'
+  }
+};
+
+// Validação de configuração (apenas frontend)
 function validateConfig() {
-  const errors = [];
-
-  if (SUPABASE_CONFIG.URL === 'sua-url-supabase-aqui') {
-    errors.push('SUPABASE_URL não configurada');
-  }
-
-  if (SUPABASE_CONFIG.ANON_KEY === 'sua-chave-supabase-aqui') {
-    errors.push('SUPABASE_ANON_KEY não configurada');
-  }
-
-  if (errors.length > 0) {
-    console.error('❌ Erros de configuração:', errors);
-    return false;
-  }
-
-  console.log('✅ Configuração validada com sucesso');
+  console.log('✅ Configuração frontend validada com sucesso');
   return true;
 }
 
 // Exportar configuração
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { OPENAI_CONFIG, SUPABASE_CONFIG, SECURITY_CONFIG, validateConfig };
+  module.exports = { OPENAI_CONFIG, SECURITY_CONFIG, API_CONFIG, validateConfig };
 } else {
   window.OPENAI_CONFIG = OPENAI_CONFIG;
-  window.SUPABASE_CONFIG = SUPABASE_CONFIG;
   window.SECURITY_CONFIG = SECURITY_CONFIG;
+  window.API_CONFIG = API_CONFIG;
   window.validateConfig = validateConfig;
-
+  
   // Validar configuração ao carregar
   document.addEventListener('DOMContentLoaded', validateConfig);
 }

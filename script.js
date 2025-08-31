@@ -5,15 +5,82 @@ let ndCounter = 1;
 let currentNdId = null; // ID da ND atual
 let valorAdiantamento = 0; // Valor do adiantamento da ND atual
 
-// Configuração da OpenAI API (carregada do config.js)
-const OPENAI_API_KEY = OPENAI_CONFIG.API_KEY;
-const OPENAI_API_URL = OPENAI_CONFIG.API_URL;
-
-// Inicialização do cliente Supabase
-const supabase = window.supabase.createClient(SUPABASE_CONFIG.URL, SUPABASE_CONFIG.ANON_KEY);
+// Configuração das APIs (carregada do config.js)
+// Todas as operações agora passam por APIs backend seguras
 
 // Variável para armazenar o arquivo original da imagem
 let originalImageFile = null;
+
+// Funções auxiliares para APIs backend
+async function supabaseQuery(table, options = {}) {
+  const response = await fetch(API_CONFIG.ENDPOINTS.SUPABASE_QUERY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ table, ...options })
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Query failed: ${response.statusText}`);
+  }
+  
+  return await response.json();
+}
+
+async function supabaseInsert(table, data, select = '*') {
+  const response = await fetch(API_CONFIG.ENDPOINTS.SUPABASE_INSERT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ table, data, select })
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Insert failed: ${response.statusText}`);
+  }
+  
+  return await response.json();
+}
+
+async function supabaseUpdate(table, data, filters, select = '*') {
+  const response = await fetch(API_CONFIG.ENDPOINTS.SUPABASE_UPDATE, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ table, data, filters, select })
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Update failed: ${response.statusText}`);
+  }
+  
+  return await response.json();
+}
+
+async function supabaseDelete(table, filters, select) {
+  const response = await fetch(API_CONFIG.ENDPOINTS.SUPABASE_DELETE, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ table, filters, select })
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Delete failed: ${response.statusText}`);
+  }
+  
+  return await response.json();
+}
+
+async function supabaseUpload(fileBase64, fileName) {
+  const response = await fetch(API_CONFIG.ENDPOINTS.SUPABASE_UPLOAD, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fileBase64, fileName })
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Upload failed: ${response.statusText}`);
+  }
+  
+  return await response.json();
+}
 
 // Formatação brasileira
 function formatCurrency(value) {
@@ -461,27 +528,22 @@ function standardizeDescription(originalDescription, category) {
 
 // Persistência de sessão
 async function loadExpensesFromSupabase() {
-  console.log('🔄 Iniciando carregamento de sessão...');
+  console.log('Iniciando carregamento de sessão...');
 
   try {
     // PASSO 1: Buscar ND com status 'aberta' (apenas uma deve existir)
-    console.log('🔍 Buscando ND em aberto no banco de dados...');
+    console.log('Buscando ND em aberto no banco de dados...');
 
-    const { data: ndData, error: ndError } = await supabase
-      .from('nd_viagens')
-      .select('*')
-      .eq('status', 'aberta')
-      .limit(1)
-      .single();
+    const ndResponse = await supabaseQuery('nd_viagens', {
+      filters: [{ column: 'status', operator: 'eq', value: 'aberta' }],
+      limit: 1
+    });
 
-    if (ndError && ndError.code !== 'PGRST116') {
-      // PGRST116 = no rows returned
-      throw ndError;
-    }
+    const ndData = ndResponse.data && ndResponse.data.length > 0 ? ndResponse.data[0] : null;
 
     // CENÁRIO A: ND aberta encontrada - Restaurar sessão
     if (ndData) {
-      console.log('✅ ND aberta encontrada - Restaurando sessão:', ndData.numero_nd);
+      console.log('ND aberta encontrada - Restaurando sessão:', ndData.numero_nd);
 
       currentNdId = ndData.id;
       const numeroAtual = ndData.numero_nd.replace('ND', '');
@@ -491,7 +553,7 @@ async function loadExpensesFromSupabase() {
       const travelDescriptionField = document.getElementById('travelDescription');
       if (travelDescriptionField && ndData.descricao) {
         travelDescriptionField.value = ndData.descricao;
-        console.log('📝 Descrição da ND carregada:', ndData.descricao);
+        console.log('Descrição da ND carregada:', ndData.descricao);
       }
 
       // Carregar valor do adiantamento
@@ -499,21 +561,18 @@ async function loadExpensesFromSupabase() {
       const adiantamentoInput = document.getElementById('valorAdiantamento');
       if (adiantamentoInput) {
         adiantamentoInput.value = valorAdiantamento.toFixed(2);
-        console.log('💰 Adiantamento carregado:', formatCurrency(valorAdiantamento));
+        console.log('Adiantamento carregado:', formatCurrency(valorAdiantamento));
       }
 
       // PASSO 2: Carregar lançamentos da ND aberta
-      console.log('📋 Carregando lançamentos da ND:', currentNdId);
+      console.log('Carregando lançamentos da ND:', currentNdId);
 
-      const { data: lancamentos, error: lancamentosError } = await supabase
-        .from('lancamentos')
-        .select('*')
-        .eq('nd_id', currentNdId)
-        .order('created_at', { ascending: false });
+      const lancamentosResponse = await supabaseQuery('lancamentos', {
+        filters: [{ column: 'nd_id', operator: 'eq', value: currentNdId }],
+        orderBy: { column: 'created_at', ascending: false }
+      });
 
-      if (lancamentosError) {
-        throw lancamentosError;
-      }
+      const lancamentos = lancamentosResponse.data || [];
 
       // Converter dados do Supabase para formato local
       expenses = lancamentos.map(item => ({
@@ -541,26 +600,17 @@ async function loadExpensesFromSupabase() {
     }
     // CENÁRIO B: Nenhuma ND aberta - Criar nova ND
     else {
-      console.log('📝 Nenhuma ND aberta encontrada - Criando nova ND...');
+      console.log('Nenhuma ND aberta encontrada - Criando nova ND...');
 
       const novoNumero = `ND${String(ndCounter).padStart(3, '0')}`;
 
-      const { data: novaNd, error: criarError } = await supabase
-        .from('nd_viagens')
-        .insert([
-          {
-            numero_nd: novoNumero,
-            descricao: 'Nova Nota de Despesa',
-            status: 'aberta',
-          },
-        ])
-        .select()
-        .single();
+      const novaNdResponse = await supabaseInsert('nd_viagens', {
+        numero_nd: novoNumero,
+        descricao: 'Nova Nota de Despesa',
+        status: 'aberta',
+      });
 
-      if (criarError) {
-        throw criarError;
-      }
-
+      const novaNd = novaNdResponse.data[0];
       currentNdId = novaNd.id;
       expenses = []; // Lista vazia para nova ND
 
@@ -570,7 +620,7 @@ async function loadExpensesFromSupabase() {
         travelDescriptionField.value = 'Nova Nota de Despesa';
       }
 
-      console.log('✅ Nova ND criada:', novoNumero);
+      console.log('Nova ND criada:', novoNumero);
       showNotification(`Nova ND ${novoNumero} iniciada`, 'success');
     }
 
@@ -876,18 +926,19 @@ async function confirmExpense() {
     let imagemUrl = null;
 
     // Upload da imagem para Supabase Storage (se houver)
-    if (originalImageFile) {
-      console.log('📤 Iniciando upload da imagem...', originalImageFile.name);
+    if (originalImageFile && currentImageData?.base64) {
+      console.log('Iniciando upload da imagem...', originalImageFile.name);
       try {
-        imagemUrl = await uploadImageToSupabase(originalImageFile);
-        console.log('✅ Upload da imagem concluído:', imagemUrl);
+        const uploadResponse = await supabaseUpload(currentImageData.base64, originalImageFile.name);
+        imagemUrl = uploadResponse.data.publicUrl;
+        console.log('Upload da imagem concluído:', imagemUrl);
       } catch (uploadError) {
-        console.error('❌ Erro no upload da imagem:', uploadError);
+        console.error('Erro no upload da imagem:', uploadError);
         // Continuar sem imagem em caso de erro no upload
         imagemUrl = 'https://via.placeholder.com/150';
       }
     } else {
-      console.log('ℹ️ Nenhuma imagem para upload');
+      console.log('Nenhuma imagem para upload');
       imagemUrl = 'https://via.placeholder.com/150';
     }
 
@@ -906,29 +957,11 @@ async function confirmExpense() {
     console.log('📝 Dados preparados para inserção:', dadosParaInserir);
 
     // Inserir no banco de dados
-    console.log('💾 Iniciando inserção no Supabase...');
-    const { data: insertData, error: supabaseError } = await supabase
-      .from('lancamentos')
-      .insert([dadosParaInserir])
-      .select();
-
-    console.log('📊 Resposta do Supabase:');
-    console.log('  - Data:', insertData);
-    console.log('  - Error:', supabaseError);
-
-    // Verificar se houve erro no Supabase
-    if (supabaseError) {
-      console.error('❌ Erro retornado pelo Supabase:', supabaseError);
-      throw new Error(`Erro do Supabase: ${supabaseError.message}`);
-    }
-
-    // Verificar se dados foram retornados
-    if (!insertData || insertData.length === 0) {
-      console.error('❌ Nenhum dado retornado após inserção');
-      throw new Error('Nenhum dado retornado após inserção');
-    }
-
-    console.log('✅ Inserção no Supabase bem-sucedida:', insertData[0]);
+    console.log('Iniciando inserção no Supabase...');
+    const insertResponse = await supabaseInsert('lancamentos', dadosParaInserir);
+    
+    const insertData = insertResponse.data;
+    console.log('Inserção no Supabase bem-sucedida:', insertData[0]);
 
     // Adicionar à lista local
     const newExpense = {
@@ -1062,30 +1095,6 @@ function clearForm() {
 }
 
 // Supabase Storage
-async function uploadImageToSupabase(file) {
-  try {
-    // Gerar nome único para o arquivo
-    const fileName = `comprovante_${Date.now()}_${Math.random().toString(36).substring(7)}.${file.name.split('.').pop()}`;
-
-    // Upload para o bucket 'comprovantes'
-    const { data, error } = await supabase.storage.from('comprovantes').upload(fileName, file, {
-      cacheControl: '3600',
-      upsert: false,
-    });
-
-    if (error) {
-      throw error;
-    }
-
-    // Retornar apenas o nome do arquivo (não a URL completa)
-    // A URL pública será gerada quando necessário
-    return fileName;
-  } catch (error) {
-    console.error('Erro no upload da imagem:', error);
-    throw new Error('Falha no upload da imagem');
-  }
-}
-
 // Interface e atualizações
 function showLoadingOverlay(show) {
   const overlay = document.getElementById('loadingOverlay');
@@ -1167,18 +1176,14 @@ async function saveAdiantamento(valor) {
   }
 
   try {
-    const { error } = await supabase
-      .from('nd_viagens')
-      .update({ valor_adiantamento: valor })
-      .eq('id', currentNdId);
-
-    if (error) {
-      throw error;
-    }
+    await supabaseUpdate('nd_viagens', 
+      { valor_adiantamento: valor },
+      [{ column: 'id', operator: 'eq', value: currentNdId }]
+    );
 
     valorAdiantamento = valor;
     updateTotalizadores();
-    console.log('💰 Adiantamento salvo:', formatCurrency(valor));
+    console.log('Adiantamento salvo:', formatCurrency(valor));
   } catch (error) {
     console.error('Erro ao salvar adiantamento:', error);
     showNotification('Erro ao salvar adiantamento', 'error');
@@ -1322,7 +1327,7 @@ function sortExpensesByDateAndCategory(expensesList) {
 
 // Função para excluir lançamento
 async function deleteExpense(expenseId) {
-  console.log('🗑️ Iniciando exclusão do lançamento:', expenseId);
+  console.log('Iniciando exclusão do lançamento:', expenseId);
 
   // Confirmação do usuário
   const confirmDelete = confirm(
@@ -1330,7 +1335,7 @@ async function deleteExpense(expenseId) {
   );
 
   if (!confirmDelete) {
-    console.log('❌ Exclusão cancelada pelo usuário');
+    console.log('Exclusão cancelada pelo usuário');
     return;
   }
 
@@ -1339,14 +1344,12 @@ async function deleteExpense(expenseId) {
     showLoadingOverlay(true);
 
     // Excluir do Supabase
-    console.log('💾 Excluindo do banco de dados...');
-    const { error } = await supabase.from('lancamentos').delete().eq('id', expenseId);
+    console.log('Excluindo do banco de dados...');
+    await supabaseDelete('lancamentos', [
+      { column: 'id', operator: 'eq', value: expenseId }
+    ]);
 
-    if (error) {
-      throw error;
-    }
-
-    console.log('✅ Lançamento excluído do banco com sucesso');
+    console.log('Lançamento excluído do banco com sucesso');
 
     // Remover da lista local
     const expenseIndex = expenses.findIndex(exp => exp.id === expenseId);
@@ -1973,36 +1976,29 @@ async function exportND() {
     const description = document.getElementById('travelDescription').value || 'Viagem de Negócios';
 
     // Buscar dados atuais da ND
-    const { data: ndAtual, error: ndError } = await supabase
-      .from('nd_viagens')
-      .select('numero_nd, total_calculado')
-      .eq('id', currentNdId)
-      .single();
+    const ndResponse = await supabaseQuery('nd_viagens', {
+      select: 'numero_nd, total_calculado',
+      filters: [{ column: 'id', operator: 'eq', value: currentNdId }],
+      limit: 1
+    });
 
-    if (ndError) {
-      throw ndError;
-    }
-
+    const ndAtual = ndResponse.data[0];
     const ndNumber = ndAtual.numero_nd;
     const total = parseFloat(ndAtual.total_calculado) || 0;
 
-    console.log('📊 Dados da ND:', { ndNumber, total, description });
+    console.log('Dados da ND:', { ndNumber, total, description });
 
     // Atualizar a ND atual para fechada
-    const { error: updateError } = await supabase
-      .from('nd_viagens')
-      .update({
+    await supabaseUpdate('nd_viagens',
+      {
         descricao: description,
         status: 'fechada',
         updated_at: new Date().toISOString(),
-      })
-      .eq('id', currentNdId);
+      },
+      [{ column: 'id', operator: 'eq', value: currentNdId }]
+    );
 
-    if (updateError) {
-      throw updateError;
-    }
-
-    console.log('✅ ND fechada no banco de dados');
+    console.log('ND fechada no banco de dados');
 
     // Gerar arquivo Excel (.xlsx)
     await generateExcelFile(expenses, ndNumber, description, total, valorAdiantamento);
@@ -2036,22 +2032,13 @@ async function prepareNewND() {
 
     // Criar nova ND no banco
     const novoNumero = `ND${String(ndCounter).padStart(3, '0')}`;
-    const { data: novaNd, error } = await supabase
-      .from('nd_viagens')
-      .insert([
-        {
-          numero_nd: novoNumero,
-          descricao: 'Nova Nota de Despesa',
-          status: 'aberta',
-        },
-      ])
-      .select();
+    const novaNdResponse = await supabaseInsert('nd_viagens', {
+      numero_nd: novoNumero,
+      descricao: 'Nova Nota de Despesa',
+      status: 'aberta',
+    });
 
-    if (error) {
-      throw error;
-    }
-
-    currentNdId = novaNd[0].id;
+    currentNdId = novaNdResponse.data[0].id;
 
     // Limpar interface
     document.getElementById('travelDescription').value = '';

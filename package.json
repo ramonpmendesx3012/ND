@@ -43,6 +43,10 @@
   "engines": {
     "node": ">=18.0.0"
   },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "uuid": "^9.0.1"
+  },
   "devDependencies": {
     "http-server": "^14.1.1",
     "prettier": "^3.6.2"
