@@ -1,11 +1,11 @@
-const CACHE_NAME = 'nd-express-v2.0.0';
+const CACHE_NAME = 'nd-express-v2';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/styles.css',
-  '/script.js',
-  '/manifest.json',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+  '/config.js',
+  '/public/manifest.json',
+  '/src/index.js',
+  '/src/App.js'
 ];
 
 // Instalação do Service Worker

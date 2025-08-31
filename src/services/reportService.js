@@ -88,7 +88,7 @@ class ReportService {
     const startRow = 7;
     
     // Cabeçalhos das colunas
-    const headers = ['Data', 'Categoria', 'Descrição', 'Estabelecimento', 'Valor', 'Comprovante'];
+    const headers = ['Data', 'Categoria', 'Descrição', 'Valor', 'Comprovante'];
     headers.forEach((header, index) => {
       const cell = worksheet.getCell(startRow, index + 1);
       cell.value = header;
@@ -107,13 +107,12 @@ class ReportService {
       worksheet.getCell(row, 1).value = formatDate(expense.date);
       worksheet.getCell(row, 2).value = expense.category;
       worksheet.getCell(row, 3).value = expense.description;
-      worksheet.getCell(row, 4).value = expense.establishment || 'Não informado';
-      worksheet.getCell(row, 5).value = expense.value;
-      worksheet.getCell(row, 5).numFmt = 'R$ #,##0.00';
+      worksheet.getCell(row, 4).value = expense.value;
+      worksheet.getCell(row, 4).numFmt = 'R$ #,##0.00';
       
       // Link para o comprovante (se disponível)
       if (expense.imageUrl && expense.imageUrl !== 'https://via.placeholder.com/150') {
-        const cell = worksheet.getCell(row, 6);
+        const cell = worksheet.getCell(row, 5);
         cell.value = 'Ver Comprovante';
         cell.font = { color: { argb: 'FF0000FF' }, underline: true };
         
@@ -126,8 +125,8 @@ class ReportService {
           cell.value = 'Comprovante Disponível';
         }
       } else {
-        worksheet.getCell(row, 6).value = 'Sem comprovante';
-      }
+          worksheet.getCell(row, 5).value = 'Sem comprovante';
+        }
     });
   }
 
@@ -187,7 +186,7 @@ class ReportService {
    */
   applyFormatting(worksheet) {
     // Ajustar largura das colunas
-    const columnWidths = [12, 15, 30, 20, 15, 18];
+    const columnWidths = [12, 15, 30, 15, 18];
     columnWidths.forEach((width, index) => {
       worksheet.getColumn(index + 1).width = width;
     });
@@ -246,10 +245,10 @@ class ReportService {
    */
   generateCSVFile(expenses, ndNumber, description, total, adiantamento) {
     try {
-      let csv = 'Data,Categoria,Descrição,Estabelecimento,Valor\n';
+      let csv = 'Data,Categoria,Descrição,Valor\n';
       
       expenses.forEach(expense => {
-        csv += `${formatDate(expense.date)},${expense.category},"${expense.description}","${expense.establishment || 'Não informado'}",${expense.value}\n`;
+        csv += `${formatDate(expense.date)},${expense.category},"${expense.description}",${expense.value}\n`;
       });
       
       csv += `\n\nResumo Financeiro\n`;

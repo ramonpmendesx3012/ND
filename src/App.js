@@ -8,6 +8,7 @@ import { ndService } from './services/ndService.js';
 import { launchService } from './services/launchService.js';
 import { storageService } from './services/storageService.js';
 import { reportService } from './services/reportService.js';
+import { downloadService } from './services/downloadService.js';
 
 import { formatCurrency } from './utils/formatCurrency.js';
 import { formatDate, getCurrentDateForInput } from './utils/formatDate.js';
@@ -322,9 +323,11 @@ class App {
     buttonsContainer.style.cssText = 'display: flex; gap: var(--spacing-3); justify-content: center; flex-wrap: wrap;';
     
     const exportBtn = Button.primary('📊 Exportar e Fechar ND', () => this.handleExportND());
+    const downloadBtn = Button.secondary('📦 Baixar Comprovantes', () => this.handleDownloadReceipts());
     const cancelBtn = Button.error('❌ Cancelar ND', () => this.handleCancelND());
     
     buttonsContainer.appendChild(exportBtn);
+    buttonsContainer.appendChild(downloadBtn);
     buttonsContainer.appendChild(cancelBtn);
     
     body.appendChild(buttonsContainer);
@@ -853,6 +856,42 @@ class App {
     
     // Implementar modal de detalhes
     alert(`Detalhes da despesa:\n\nData: ${formatDate(expense.date)}\nValor: ${formatCurrency(expense.value)}\nCategoria: ${expense.category}\nDescrição: ${expense.description}`);
+  }
+
+  async handleDownloadReceipts() {
+    try {
+      // Verificar se há comprovantes disponíveis
+      const receiptInfo = downloadService.checkAvailableReceipts(this.state.expenses);
+      
+      if (!receiptInfo.hasDownloadableReceipts) {
+        this.showNotification('Nenhum comprovante disponível para download', NOTIFICATION_TYPES.WARNING);
+        return;
+      }
+      
+      // Mostrar informações e confirmar download
+      const estimatedSize = downloadService.estimateDownloadSize(this.state.expenses);
+      const message = `Baixar ${receiptInfo.withImages} comprovante(s)?\n\nTamanho estimado: ${estimatedSize}\n\nOs arquivos serão baixados em um arquivo ZIP com resolução original.`;
+      
+      if (!confirm(message)) {
+        return;
+      }
+      
+      showLoading('Preparando download dos comprovantes...');
+      
+      const ndNumber = ndService.generateNextNDNumber(this.state.ndCounter);
+      const result = await downloadService.downloadAllReceipts(this.state.expenses, ndNumber);
+      
+      this.showNotification(
+        `Download concluído! ${result.downloaded} de ${result.total} comprovantes baixados.`,
+        NOTIFICATION_TYPES.SUCCESS
+      );
+      
+    } catch (error) {
+      console.error('Erro no download de comprovantes:', error);
+      this.showNotification(`Erro no download: ${error.message}`, NOTIFICATION_TYPES.ERROR);
+    } finally {
+      hideLoading();
+    }
   }
 
   async handleExportND() {

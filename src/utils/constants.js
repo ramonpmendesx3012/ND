@@ -54,29 +54,7 @@ export const NOTIFICATION_TYPES = {
   WARNING: 'warning'
 };
 
-// Mapeamento de estabelecimentos para categorias
-export const ESTABLISHMENT_MAPPING = {
-  // Alimentação por horário
-  'mcdonalds': EXPENSE_CATEGORIES.ALIMENTACAO,
-  'burger king': EXPENSE_CATEGORIES.ALIMENTACAO,
-  'kfc': EXPENSE_CATEGORIES.ALIMENTACAO,
-  'subway': EXPENSE_CATEGORIES.ALIMENTACAO,
-  'starbucks': EXPENSE_CATEGORIES.ALIMENTACAO,
-  
-  // Transporte
-  'uber': EXPENSE_CATEGORIES.DESLOCAMENTO,
-  '99': EXPENSE_CATEGORIES.DESLOCAMENTO,
-  'taxi': EXPENSE_CATEGORIES.DESLOCAMENTO,
-  'latam': EXPENSE_CATEGORIES.DESLOCAMENTO,
-  'gol': EXPENSE_CATEGORIES.DESLOCAMENTO,
-  'azul': EXPENSE_CATEGORIES.DESLOCAMENTO,
-  
-  // Hospedagem
-  'hotel': EXPENSE_CATEGORIES.HOSPEDAGEM,
-  'pousada': EXPENSE_CATEGORIES.HOSPEDAGEM,
-  'ibis': EXPENSE_CATEGORIES.HOSPEDAGEM,
-  'accor': EXPENSE_CATEGORIES.HOSPEDAGEM
-};
+// Mapeamento removido - estabelecimento não é mais usado
 
 // Palavras-chave para categorização automática
 export const CATEGORY_KEYWORDS = {
@@ -105,6 +83,5 @@ export default {
   VALIDATION,
   ND_STATUS,
   NOTIFICATION_TYPES,
-  ESTABLISHMENT_MAPPING,
   CATEGORY_KEYWORDS
 };

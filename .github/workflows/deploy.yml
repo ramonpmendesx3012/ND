@@ -30,12 +30,12 @@ jobs:
           npm install -g http-server
 
       - name: Validate HTML
-        run: |
-          # Verificar se arquivos principais existem
-          test -f index.html
-          test -f script.js
-          test -f styles.css
-          test -f config.js
+         run: |
+           # Verificar se arquivos principais existem
+           test -f index.html
+           test -f config.js
+           test -d src
+           test -d api
 
       - name: Check JavaScript syntax
         run: |

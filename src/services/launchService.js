@@ -19,7 +19,7 @@ class LaunchService {
         valor: parseFloat(launchData.value),
         descricao: launchData.description || 'Não informado',
         categoria: launchData.category,
-        estabelecimento: launchData.establishment || 'Não informado',
+        // estabelecimento removido - campo não mais necessário
         imagem_url: launchData.imageUrl,
         confianca: parseInt(launchData.confidence) || 0
       });
@@ -176,7 +176,7 @@ class LaunchService {
       value: parseFloat(supabaseData.valor),
       description: supabaseData.descricao,
       category: supabaseData.categoria,
-      establishment: supabaseData.estabelecimento,
+      // establishment removido - campo não mais necessário
       confidence: supabaseData.confianca,
       imageUrl: supabaseData.imagem_url,
       timestamp: supabaseData.created_at
