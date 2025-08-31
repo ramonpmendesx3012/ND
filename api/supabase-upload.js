@@ -67,11 +67,31 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // Gerar nome único para o arquivo
-    const uniqueFileName = `${uuidv4()}-${fileName}`;
+    // Sanitizar e gerar nome único para o arquivo
+    const sanitizedFileName = fileName
+      .replace(/[^a-zA-Z0-9.-]/g, '_') // Substituir caracteres especiais por underscore
+      .replace(/_{2,}/g, '_') // Substituir múltiplos underscores por um só
+      .replace(/^_|_$/g, ''); // Remover underscores do início e fim
+    
+    const uniqueFileName = `${uuidv4()}-${sanitizedFileName}`;
     const filePath = `uploads/${uniqueFileName}`;
 
+    // Verificar se o bucket existe
+    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+    
+    if (bucketsError) {
+      console.error('Erro ao listar buckets:', bucketsError);
+      return res.status(500).json({ error: 'Storage service error' });
+    }
+    
+    const bucketExists = buckets.some(b => b.name === bucket);
+    if (!bucketExists) {
+      console.error(`Bucket '${bucket}' não existe. Buckets disponíveis:`, buckets.map(b => b.name));
+      return res.status(500).json({ error: `Storage bucket '${bucket}' not found` });
+    }
+    
     // Upload para o Supabase Storage
+    console.log(`Fazendo upload para: ${bucket}/${filePath}`);
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from(bucket)
       .upload(filePath, fileBuffer, {
