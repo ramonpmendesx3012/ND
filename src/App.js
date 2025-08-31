@@ -27,7 +27,14 @@ class App {
       valorAdiantamento: 0,
       currentImageData: null,
       originalImageFile: null
-    }
+    };
+
+    // Componentes
+    this.header = new Header();
+    
+    // Elementos DOM
+    this.elements = {};
+  }
 
   /**
    * Verificar se usuário está autenticado
@@ -86,13 +93,6 @@ class App {
       console.error('❌ Erro no logout:', error);
       this.showNotification('Erro ao fazer logout', NOTIFICATION_TYPES.ERROR);
     }
-  };
-
-    // Componentes
-    this.header = new Header();
-    
-    // Elementos DOM
-    this.elements = {};
   }
 
   /**

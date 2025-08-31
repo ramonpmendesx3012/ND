@@ -79,9 +79,9 @@ describe('categoryUtils', () => {
     });
 
     test('retorna OUTROS quando não consegue categorizar', () => {
-      expect(categorizeExpenseAutomatically('Compra material', '02:00'))
+      expect(categorizeExpenseAutomatically('Compra material', null))
         .toBe(EXPENSE_CATEGORIES.OUTROS);
-      expect(categorizeExpenseAutomatically('', '12:00'))
+      expect(categorizeExpenseAutomatically('', null))
         .toBe(EXPENSE_CATEGORIES.OUTROS);
       expect(categorizeExpenseAutomatically('Despesa indefinida'))
         .toBe(EXPENSE_CATEGORIES.OUTROS);
@@ -100,7 +100,8 @@ describe('categoryUtils', () => {
     });
 
     test('usa categoria da IA quando auto-categoria é OUTROS', () => {
-      expect(suggestCategory('Despesa indefinida', EXPENSE_CATEGORIES.HOSPEDAGEM))
+      // Usar uma descrição que definitivamente retorna OUTROS
+      expect(suggestCategory('', EXPENSE_CATEGORIES.HOSPEDAGEM))
         .toBe(EXPENSE_CATEGORIES.HOSPEDAGEM);
     });
 

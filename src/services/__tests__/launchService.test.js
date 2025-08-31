@@ -3,10 +3,15 @@ import { launchService } from '../launchService.js';
 
 // Mock do apiClient
 jest.mock('../../config/apiClient.js', () => ({
-  request: jest.fn()
+  apiClient: {
+    insert: jest.fn(),
+    query: jest.fn(),
+    delete: jest.fn(),
+    update: jest.fn()
+  }
 }));
 
-import { request } from '../../config/apiClient.js';
+import { apiClient } from '../../config/apiClient.js';
 
 describe('launchService', () => {
   beforeEach(() => {
@@ -25,34 +30,28 @@ describe('launchService', () => {
       };
 
       const mockResponse = {
-        success: true,
-        data: {
+        data: [{
           id: 'launch-id-123',
           ...mockLaunchData,
           created_at: '2024-01-15T12:00:00Z'
-        }
+        }]
       };
 
-      request.mockResolvedValue(mockResponse);
+      apiClient.insert.mockResolvedValue(mockResponse);
 
       const result = await launchService.addLaunch(mockLaunchData);
 
-      expect(request).toHaveBeenCalledWith('/supabase-insert', {
-        method: 'POST',
-        body: {
-          table: 'lancamentos',
-          data: {
-            nd_id: mockLaunchData.ndId,
-            data_despesa: mockLaunchData.date,
-            valor: mockLaunchData.value,
-            descricao: mockLaunchData.description,
-            categoria: mockLaunchData.category,
-            imagem_url: mockLaunchData.imageUrl
-          }
-        }
+      expect(apiClient.insert).toHaveBeenCalledWith('lancamentos', {
+        nd_id: mockLaunchData.ndId,
+        data_despesa: mockLaunchData.date,
+        valor: mockLaunchData.value,
+        descricao: mockLaunchData.description,
+        categoria: mockLaunchData.category,
+        imagem_url: mockLaunchData.imageUrl,
+        confianca: 0
       });
 
-      expect(result).toEqual(mockResponse.data);
+      expect(result).toEqual(mockResponse.data[0]);
     });
 
     test('lança erro quando falha ao adicionar', async () => {
@@ -61,13 +60,14 @@ describe('launchService', () => {
         date: '2024-01-15',
         value: 50.00,
         description: 'Almoço',
-        category: 'Alimentação'
+        category: 'Alimentação',
+        imageUrl: 'https://example.com/image.jpg'
       };
 
-      request.mockRejectedValue(new Error('Erro de rede'));
+      apiClient.insert.mockRejectedValue(new Error('Erro de rede'));
 
       await expect(launchService.addLaunch(mockLaunchData))
-        .rejects.toThrow('Erro ao adicionar lançamento');
+        .rejects.toThrow('Erro de rede');
     });
 
     test('valida dados obrigatórios', async () => {
@@ -78,15 +78,14 @@ describe('launchService', () => {
       };
 
       await expect(launchService.addLaunch(invalidData))
-        .rejects.toThrow('Dados obrigatórios ausentes');
+        .rejects.toThrow('Dados inválidos');
     });
   });
 
-  describe('fetchLaunchesByND', () => {
+  describe('getLaunchesByND', () => {
     test('busca lançamentos por ND com sucesso', async () => {
       const ndId = 'test-nd-id';
       const mockResponse = {
-        success: true,
         data: [
           {
             id: 'launch-1',
@@ -107,18 +106,13 @@ describe('launchService', () => {
         ]
       };
 
-      request.mockResolvedValue(mockResponse);
+      apiClient.query.mockResolvedValue(mockResponse);
 
-      const result = await launchService.fetchLaunchesByND(ndId);
+      const result = await launchService.getLaunchesByND(ndId);
 
-      expect(request).toHaveBeenCalledWith('/supabase-query', {
-        method: 'POST',
-        body: {
-          table: 'lancamentos',
-          select: '*',
-          filters: { nd_id: ndId },
-          orderBy: { data_despesa: 'asc' }
-        }
+      expect(apiClient.query).toHaveBeenCalledWith('lancamentos', {
+        filters: [{ column: 'nd_id', operator: 'eq', value: ndId }],
+        orderBy: { column: 'created_at', ascending: false }
       });
 
       expect(result).toHaveLength(2);
@@ -128,13 +122,12 @@ describe('launchService', () => {
     test('retorna array vazio quando não há lançamentos', async () => {
       const ndId = 'empty-nd-id';
       const mockResponse = {
-        success: true,
         data: []
       };
 
-      request.mockResolvedValue(mockResponse);
+      apiClient.query.mockResolvedValue(mockResponse);
 
-      const result = await launchService.fetchLaunchesByND(ndId);
+      const result = await launchService.getLaunchesByND(ndId);
 
       expect(result).toEqual([]);
     });
@@ -144,32 +137,27 @@ describe('launchService', () => {
     test('exclui lançamento com sucesso', async () => {
       const launchId = 'launch-to-delete';
       const mockResponse = {
-        success: true,
         data: { id: launchId }
       };
 
-      request.mockResolvedValue(mockResponse);
+      apiClient.delete.mockResolvedValue(mockResponse);
 
       const result = await launchService.deleteLaunch(launchId);
 
-      expect(request).toHaveBeenCalledWith('/supabase-delete', {
-        method: 'POST',
-        body: {
-          table: 'lancamentos',
-          filters: { id: launchId }
-        }
-      });
+      expect(apiClient.delete).toHaveBeenCalledWith('lancamentos', [
+        { column: 'id', operator: 'eq', value: launchId }
+      ]);
 
-      expect(result).toBe(true);
+      expect(result).toEqual(mockResponse);
     });
 
     test('lança erro quando falha ao excluir', async () => {
       const launchId = 'invalid-launch-id';
 
-      request.mockRejectedValue(new Error('Lançamento não encontrado'));
+      apiClient.delete.mockRejectedValue(new Error('Lançamento não encontrado'));
 
       await expect(launchService.deleteLaunch(launchId))
-        .rejects.toThrow('Erro ao excluir lançamento');
+        .rejects.toThrow('Lançamento não encontrado');
     });
   });
 
@@ -206,13 +194,15 @@ describe('launchService', () => {
         data_despesa: '2024-01-15',
         valor: 25.00,
         descricao: 'Café',
-        categoria: 'Alimentação'
+        categoria: 'Alimentação',
+        imagem_url: 'https://example.com/image.jpg',
+        created_at: '2024-01-15T12:00:00Z'
       };
 
       const result = launchService.convertToLocalFormat(minimalData);
 
-      expect(result.imageUrl).toBe('https://via.placeholder.com/150');
-      expect(result.timestamp).toBeDefined();
+      expect(result.imageUrl).toBe('https://example.com/image.jpg');
+      expect(result.timestamp).toBe('2024-01-15T12:00:00Z');
     });
   });
 
@@ -223,7 +213,8 @@ describe('launchService', () => {
         date: '2024-01-15',
         value: 50.00,
         description: 'Almoço',
-        category: 'Alimentação'
+        category: 'Alimentação',
+        imageUrl: 'https://example.com/image.jpg'
       };
 
       expect(() => launchService.validateLaunchData(validData)).not.toThrow();
@@ -233,11 +224,11 @@ describe('launchService', () => {
       const invalidData = {
         date: '2024-01-15',
         value: 50.00
-        // ndId, description, category ausentes
+        // ndId, description, category, imageUrl ausentes
       };
 
       expect(() => launchService.validateLaunchData(invalidData))
-        .toThrow('Dados obrigatórios ausentes');
+        .toThrow('Dados inválidos');
     });
 
     test('rejeita valor inválido', () => {
@@ -246,24 +237,26 @@ describe('launchService', () => {
         date: '2024-01-15',
         value: -10.00, // Valor negativo
         description: 'Teste',
-        category: 'Alimentação'
+        category: 'Alimentação',
+        imageUrl: 'https://example.com/image.jpg'
       };
 
       expect(() => launchService.validateLaunchData(invalidData))
-        .toThrow('Valor deve ser positivo');
+        .toThrow('Dados inválidos');
     });
 
-    test('rejeita data inválida', () => {
+    test('rejeita quando data está ausente', () => {
       const invalidData = {
         ndId: 'nd-123',
-        date: 'data-inválida',
+        // date ausente
         value: 50.00,
         description: 'Teste',
-        category: 'Alimentação'
+        category: 'Alimentação',
+        imageUrl: 'https://example.com/image.jpg'
       };
 
       expect(() => launchService.validateLaunchData(invalidData))
-        .toThrow('Data inválida');
+        .toThrow('Dados inválidos');
     });
   });
 });

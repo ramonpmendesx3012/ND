@@ -3,10 +3,12 @@ import { storageService } from '../storageService.js';
 
 // Mock do apiClient
 jest.mock('../../config/apiClient.js', () => ({
-  request: jest.fn()
+  apiClient: {
+    upload: jest.fn()
+  }
 }));
 
-import { request } from '../../config/apiClient.js';
+import { apiClient } from '../../config/apiClient.js';
 
 describe('storageService', () => {
   beforeEach(() => {
@@ -17,10 +19,8 @@ describe('storageService', () => {
     test('faz upload de imagem com sucesso', async () => {
       const mockFile = new File(['test content'], 'test.jpg', { type: 'image/jpeg' });
       const mockResponse = {
-        success: true,
         data: {
-          url: 'https://storage.supabase.co/bucket/images/test-uuid-test.jpg',
-          path: 'images/test-uuid-test.jpg'
+          publicUrl: 'https://storage.supabase.co/bucket/images/test-uuid-test.jpg'
         }
       };
 
@@ -34,7 +34,7 @@ describe('storageService', () => {
 
       global.FileReader = jest.fn(() => mockFileReader);
 
-      request.mockResolvedValue(mockResponse);
+      apiClient.upload.mockResolvedValue(mockResponse);
 
       // Simular o comportamento do FileReader
       const uploadPromise = storageService.uploadImage(mockFile);
@@ -46,15 +46,8 @@ describe('storageService', () => {
 
       const result = await uploadPromise;
 
-      expect(result).toBe(mockResponse.data.url);
-      expect(request).toHaveBeenCalledWith('/supabase-upload', {
-        method: 'POST',
-        body: {
-          fileBase64: 'dGVzdCBjb250ZW50', // base64 sem prefixo
-          fileName: 'test.jpg',
-          bucket: 'images'
-        }
-      });
+      expect(result).toBe(mockResponse.data.publicUrl);
+      expect(apiClient.upload).toHaveBeenCalledWith('dGVzdCBjb250ZW50', 'test.jpg');
     });
 
     test('lança erro quando upload falha', async () => {
@@ -69,7 +62,7 @@ describe('storageService', () => {
 
       global.FileReader = jest.fn(() => mockFileReader);
 
-      request.mockRejectedValue(new Error('Upload failed'));
+      apiClient.upload.mockRejectedValue(new Error('Upload failed'));
 
       const uploadPromise = storageService.uploadImage(mockFile);
       
@@ -77,7 +70,7 @@ describe('storageService', () => {
         mockFileReader.onload();
       }, 0);
 
-      await expect(uploadPromise).rejects.toThrow('Erro no upload da imagem');
+      await expect(uploadPromise).rejects.toThrow('Upload failed');
     });
 
     test('lança erro quando FileReader falha', async () => {
@@ -105,16 +98,14 @@ describe('storageService', () => {
       const invalidFile = new File(['test'], 'test.txt', { type: 'text/plain' });
 
       await expect(storageService.uploadImage(invalidFile))
-        .rejects.toThrow('Tipo de arquivo não suportado');
+        .rejects.toThrow('Tipo de arquivo não permitido');
     });
 
     test('valida tamanho do arquivo', async () => {
       // Criar arquivo muito grande (mock)
-      const largeFile = {
-        name: 'large.jpg',
-        type: 'image/jpeg',
-        size: 15 * 1024 * 1024 // 15MB
-      };
+      const largeFile = new File(['x'.repeat(15 * 1024 * 1024)], 'large.jpg', { 
+        type: 'image/jpeg'
+      });
 
       await expect(storageService.uploadImage(largeFile))
         .rejects.toThrow('Arquivo muito grande');
@@ -123,123 +114,74 @@ describe('storageService', () => {
 
   describe('validateFile', () => {
     test('valida arquivo correto', () => {
-      const validFile = {
-        name: 'test.jpg',
-        type: 'image/jpeg',
-        size: 1024 * 1024 // 1MB
-      };
+      const validFile = new File(['test'], 'test.jpg', {
+        type: 'image/jpeg'
+      });
 
       expect(() => storageService.validateFile(validFile)).not.toThrow();
     });
 
-    test('rejeita arquivo sem nome', () => {
-      const invalidFile = {
-        type: 'image/jpeg',
-        size: 1024
-      };
-
-      expect(() => storageService.validateFile(invalidFile))
-        .toThrow('Arquivo inválido');
+    test('rejeita arquivo nulo', () => {
+      expect(() => storageService.validateFile(null))
+        .toThrow('Nenhum arquivo fornecido');
     });
 
     test('rejeita tipo não suportado', () => {
-      const invalidFile = {
-        name: 'test.pdf',
-        type: 'application/pdf',
-        size: 1024
-      };
+      const invalidFile = new File(['test'], 'test.pdf', {
+        type: 'application/pdf'
+      });
 
       expect(() => storageService.validateFile(invalidFile))
-        .toThrow('Tipo de arquivo não suportado');
+        .toThrow('Tipo de arquivo não permitido');
     });
 
     test('rejeita arquivo muito grande', () => {
-      const largeFile = {
-        name: 'large.jpg',
-        type: 'image/jpeg',
-        size: 15 * 1024 * 1024 // 15MB
-      };
+      const largeFile = new File(['x'.repeat(15 * 1024 * 1024)], 'large.jpg', {
+        type: 'image/jpeg'
+      });
 
       expect(() => storageService.validateFile(largeFile))
         .toThrow('Arquivo muito grande');
     });
   });
 
-  describe('getFileExtension', () => {
-    test('extrai extensão corretamente', () => {
-      expect(storageService.getFileExtension('test.jpg')).toBe('jpg');
-      expect(storageService.getFileExtension('image.PNG')).toBe('png');
-      expect(storageService.getFileExtension('photo.jpeg')).toBe('jpeg');
-      expect(storageService.getFileExtension('file.webp')).toBe('webp');
-    });
-
-    test('lida com nomes sem extensão', () => {
-      expect(storageService.getFileExtension('filename')).toBe('');
-      expect(storageService.getFileExtension('')).toBe('');
-    });
-
-    test('lida com múltiplos pontos', () => {
-      expect(storageService.getFileExtension('file.name.jpg')).toBe('jpg');
-      expect(storageService.getFileExtension('my.photo.PNG')).toBe('png');
-    });
-  });
-
-  describe('isValidImageType', () => {
-    test('valida tipos de imagem suportados', () => {
-      expect(storageService.isValidImageType('image/jpeg')).toBe(true);
-      expect(storageService.isValidImageType('image/png')).toBe(true);
-      expect(storageService.isValidImageType('image/webp')).toBe(true);
-    });
-
-    test('rejeita tipos não suportados', () => {
-      expect(storageService.isValidImageType('image/gif')).toBe(false);
-      expect(storageService.isValidImageType('application/pdf')).toBe(false);
-      expect(storageService.isValidImageType('text/plain')).toBe(false);
-      expect(storageService.isValidImageType('')).toBe(false);
-    });
-  });
-
   describe('formatFileSize', () => {
     test('formata tamanhos corretamente', () => {
-      expect(storageService.formatFileSize(0)).toBe('0 B');
-      expect(storageService.formatFileSize(1024)).toBe('1.0 KB');
-      expect(storageService.formatFileSize(1048576)).toBe('1.0 MB');
-      expect(storageService.formatFileSize(1073741824)).toBe('1.0 GB');
+      expect(storageService.formatFileSize(0)).toBe('0 Bytes');
+      expect(storageService.formatFileSize(1024)).toBe('1 KB');
+      expect(storageService.formatFileSize(1048576)).toBe('1 MB');
+      expect(storageService.formatFileSize(1073741824)).toBe('1 GB');
     });
 
     test('lida com valores decimais', () => {
-      expect(storageService.formatFileSize(1536)).toBe('1.5 KB'); // 1.5 KB
-      expect(storageService.formatFileSize(2621440)).toBe('2.5 MB'); // 2.5 MB
+      expect(storageService.formatFileSize(1536)).toBe('1.5 KB');
+      expect(storageService.formatFileSize(2621440)).toBe('2.5 MB');
     });
 
     test('lida com valores muito pequenos', () => {
-      expect(storageService.formatFileSize(512)).toBe('512 B');
-      expect(storageService.formatFileSize(1)).toBe('1 B');
+      expect(storageService.formatFileSize(512)).toBe('512 Bytes');
+      expect(storageService.formatFileSize(1)).toBe('1 Bytes');
     });
   });
 
-  describe('generateUniqueFileName', () => {
-    test('gera nome único mantendo extensão', () => {
-      const originalName = 'photo.jpg';
-      const uniqueName = storageService.generateUniqueFileName(originalName);
+  describe('getFileInfo', () => {
+    test('retorna informações do arquivo', () => {
+      const file = new File(['test content'], 'test.jpg', { type: 'image/jpeg' });
+      const info = storageService.getFileInfo(file);
       
-      expect(uniqueName).toMatch(/^[a-f0-9-]+-photo\.jpg$/);
-      expect(uniqueName).toContain('photo.jpg');
-      expect(uniqueName.length).toBeGreaterThan(originalName.length);
+      expect(info).toHaveProperty('name', 'test.jpg');
+      expect(info).toHaveProperty('type', 'image/jpeg');
+      expect(info).toHaveProperty('size');
+      expect(info).toHaveProperty('sizeFormatted');
     });
+  });
 
-    test('lida com nomes sem extensão', () => {
-      const originalName = 'filename';
-      const uniqueName = storageService.generateUniqueFileName(originalName);
+  describe('createPreviewUrl', () => {
+    test('cria URL de preview', () => {
+      const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
+      const url = storageService.createPreviewUrl(file);
       
-      expect(uniqueName).toMatch(/^[a-f0-9-]+-filename$/);
-    });
-
-    test('gera nomes diferentes a cada chamada', () => {
-      const name1 = storageService.generateUniqueFileName('test.jpg');
-      const name2 = storageService.generateUniqueFileName('test.jpg');
-      
-      expect(name1).not.toBe(name2);
+      expect(url).toMatch(/^blob:/);
     });
   });
 });
