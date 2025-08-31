@@ -358,20 +358,18 @@ class App {
    */
   async loadInitialData() {
     try {
+      console.log('🔄 Carregando dados iniciais...');
       showLoading('Carregando dados...');
       
-      // Buscar ND aberta
-      const openND = await ndService.fetchOpenND();
-      
-      if (openND) {
-        // Restaurar sessão existente
-        await this.restoreSession(openND);
-      } else {
-        // Criar nova ND
-        await this.createNewND();
-      }
+      // Modo offline/demo - inicializar sem APIs
+      console.log('⚠️ Modo demo - sem conexão com APIs');
+      this.state.currentNdId = 'demo-nd-001';
+      this.state.ndCounter = 1;
+      this.state.expenses = [];
+      this.state.valorAdiantamento = 0;
       
       this.updateInterface();
+      console.log('✅ Dados iniciais carregados (modo demo)');
     } catch (error) {
       console.error('Erro ao carregar dados iniciais:', error);
       this.showNotification('Erro ao carregar dados', NOTIFICATION_TYPES.ERROR);

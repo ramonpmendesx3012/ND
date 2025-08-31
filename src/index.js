@@ -1,12 +1,10 @@
 // Ponto de entrada da aplicação ND Express
 // Este arquivo inicializa a aplicação e carrega todos os recursos necessários
 
-// Importar estilos
-import './assets/styles/global.css';
-import './assets/styles/components.css';
-
 // Importar aplicação principal
+console.log('🔄 Carregando módulos...');
 import App from './App.js';
+console.log('✅ App.js carregado com sucesso');
 
 // Configuração global
 const CONFIG = {
@@ -14,6 +12,7 @@ const CONFIG = {
   VERSION: '2.0.0',
   ENVIRONMENT: 'production'
 };
+console.log('✅ Configuração inicializada:', CONFIG);
 
 /**
  * Inicializa a aplicação
@@ -23,29 +22,41 @@ async function initializeApp() {
     console.log(`🚀 Inicializando ${CONFIG.APP_NAME} v${CONFIG.VERSION}`);
     
     // Verificar se o DOM está pronto
+    console.log('🔄 Verificando DOM...');
     if (document.readyState === 'loading') {
+      console.log('⏳ Aguardando DOM carregar...');
       await new Promise(resolve => {
         document.addEventListener('DOMContentLoaded', resolve);
       });
     }
+    console.log('✅ DOM pronto');
     
     // Verificar dependências necessárias
+    console.log('🔄 Verificando dependências...');
     await checkDependencies();
+    console.log('✅ Dependências verificadas');
     
     // Configurar service worker (se disponível)
+    console.log('🔄 Configurando service worker...');
     await registerServiceWorker();
+    console.log('✅ Service worker configurado');
     
     // Inicializar aplicação principal
+    console.log('🔄 Inicializando App...');
     const app = new App();
     await app.init();
+    console.log('✅ App inicializado');
     
     // Configurar handlers globais
+    console.log('🔄 Configurando handlers globais...');
     setupGlobalHandlers();
+    console.log('✅ Handlers configurados');
     
     console.log(`✅ ${CONFIG.APP_NAME} inicializado com sucesso`);
     
   } catch (error) {
     console.error('❌ Erro ao inicializar aplicação:', error);
+    console.error('Stack trace:', error.stack);
     showErrorScreen(error);
   }
 }
