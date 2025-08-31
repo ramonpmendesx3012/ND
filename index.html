@@ -6,188 +6,19 @@
     <meta name="theme-color" content="#2563eb" />
     <meta name="description" content="ND Express - Ferramenta para lançar despesas de viagem" />
     <title>ND Express</title>
-    <link rel="manifest" href="manifest.json" />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="manifest" href="public/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <!-- Overlay de Carregamento -->
-    <div id="loadingOverlay" class="loading-overlay" style="display: none">
-      <div class="loading-content">
-        <div class="spinner"></div>
-        <p class="loading-text">Analisando comprovante...</p>
-      </div>
+    <!-- Container principal da aplicação -->
+    <div id="app">
+      <!-- A aplicação será renderizada aqui dinamicamente -->
     </div>
-
-    <!-- Container Principal -->
-    <div class="app-container">
-      <!-- Cabeçalho -->
-      <header class="header">
-        <h1 class="app-title">ND Express</h1>
-        <div class="nd-number">
-          <span class="nd-label">ND Nº:</span>
-          <span id="ndNumber" class="nd-value">ND001</span>
-        </div>
-        <div class="header-fields">
-          <div class="description-field">
-            <label for="travelDescription" class="field-label">Descrição da ND</label>
-            <input
-              type="text"
-              id="travelDescription"
-              class="description-input"
-              placeholder="Adicione uma descrição para a ND..."
-              maxlength="100"
-            />
-          </div>
-          <div class="adiantamento-field">
-            <label for="valorAdiantamento" class="field-label">Valor do Adiantamento (R$)</label>
-            <input
-              type="number"
-              id="valorAdiantamento"
-              class="adiantamento-input"
-              placeholder="0,00"
-              step="0.01"
-              min="0"
-            />
-          </div>
-        </div>
-      </header>
-
-      <!-- Área de Captura -->
-      <section class="capture-section">
-        <div class="capture-buttons">
-          <button id="captureBtn" class="capture-btn unified-btn">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-              <circle cx="12" cy="13" r="4"></circle>
-            </svg>
-            <span class="btn-text">Capturar Comprovante</span>
-          </button>
-        </div>
-
-        <!-- Input oculto para captura de arquivo -->
-        <input type="file" id="fileInput" accept="image/*" capture="environment" style="display: none" />
-      </section>
-
-      <!-- Formulário de Pré-lançamento -->
-      <section id="prelaunchForm" class="prelaunch-form" style="display: none">
-        <div class="form-header">
-          <h2 class="form-title">Confirmar Despesa</h2>
-        </div>
-
-        <div class="form-content">
-          <div class="form-group">
-            <label for="expenseDate" class="form-label">Data</label>
-            <input type="date" id="expenseDate" class="form-input" required />
-          </div>
-
-          <div class="form-group">
-            <label for="expenseValue" class="form-label">Valor (R$)</label>
-            <input type="number" id="expenseValue" class="form-input" step="0.01" min="0" placeholder="0,00" required />
-          </div>
-
-          <!-- Linha com Descrição e Nível de Confiança -->
-          <div class="form-row">
-            <div class="form-group form-group-description">
-              <label for="description" class="form-label">Descrição</label>
-              <input
-                type="text"
-                id="description"
-                class="form-input"
-                placeholder="Descrição será preenchida automaticamente"
-                maxlength="50"
-              />
-            </div>
-
-            <div class="form-group form-group-confidence">
-              <label for="confidence" class="form-label">Nível de Confiança da IA</label>
-              <div class="confidence-display">
-                <input type="text" id="confidence" class="form-input" readonly />
-                <div class="confidence-bar">
-                  <div id="confidenceProgress" class="confidence-progress"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="category" class="form-label">Categoria</label>
-            <select id="category" class="form-select" required>
-              <option value="">Selecione uma categoria</option>
-              <option value="Alimentação">Alimentação</option>
-              <option value="Deslocamento">Deslocamento</option>
-              <option value="Hospedagem">Hospedagem</option>
-              <option value="Outros">Outros</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button id="confirmBtn" class="btn btn-primary">Confirmar Lançamento</button>
-          <button id="cancelBtn" class="btn btn-secondary">Cancelar</button>
-        </div>
-      </section>
-
-      <!-- Grid de Lançamentos -->
-      <section class="expenses-section">
-        <div class="section-header">
-          <h2>Lançamentos da ND Atual</h2>
-          <div class="totalizadores-section">
-            <div class="totalizador-item">
-              <span class="totalizador-label">Valor do Adiantamento:</span>
-              <span id="adiantamentoDisplay" class="totalizador-value">R$ 0,00</span>
-            </div>
-            <div class="totalizador-item">
-              <span class="totalizador-label">Total de Despesas Lançadas:</span>
-              <span id="totalValue" class="totalizador-value">R$ 0,00</span>
-            </div>
-            <div class="totalizador-item saldo-final">
-              <span class="totalizador-label">Saldo (Reembolso / Devolução):</span>
-              <span id="saldoFinal" class="totalizador-value saldo-value">R$ 0,00</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Grid de Lançamentos -->
-        <div class="expenses-grid-container">
-          <div class="expenses-grid-header">
-            <div class="grid-col-actions">Ações</div>
-            <div class="grid-col-date">Data</div>
-            <div class="grid-col-category">Categoria</div>
-            <div class="grid-col-description">Descrição</div>
-            <div class="grid-col-value">Valor</div>
-            <div class="grid-col-image">Comprovante</div>
-          </div>
-
-          <div id="expensesList" class="expenses-grid-body">
-            <div class="empty-state">
-              <div class="empty-icon">📋</div>
-              <p>Nenhum lançamento na ND atual</p>
-              <p>Capture um comprovante para começar!</p>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <!-- Rodapé Fixo -->
-    <footer class="footer">
-      <div class="footer-content">
-        <button id="exportBtn" class="btn btn-export">
-          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7,10 12,15 17,10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          <span class="btn-text">Fechar e Exportar ND</span>
-        </button>
-      </div>
-    </footer>
 
     <script src="https://unpkg.com/exceljs@4.4.0/dist/exceljs.min.js"></script>
     <script src="config.js"></script>
-    <script src="script.js"></script>
+    <script type="module" src="src/index.js"></script>
   </body>
 </html>
