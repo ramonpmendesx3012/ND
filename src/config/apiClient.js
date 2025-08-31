@@ -1,6 +1,8 @@
 // Configuração do cliente para APIs backend
 // Centraliza todas as chamadas para os endpoints seguros
 
+import { authService } from '../services/authService.js';
+
 class ApiClient {
   constructor() {
     this.baseURL = '/api';
@@ -8,25 +10,64 @@ class ApiClient {
 
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
+    
+    // Preparar headers com autenticação
+    const headers = {
+      'Content-Type': 'application/json',
+      ...options.headers
+    };
+    
+    // Adicionar token de autenticação se disponível (exceto para rotas de auth)
+    const token = authService.getToken();
+    if (token && !endpoint.startsWith('/auth/')) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     const config = {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-      },
+      headers,
       ...options
     };
-
+    
     try {
+      console.log(`📡 ${config.method} ${url}`);
+      
       const response = await fetch(url, config);
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      // Tratar erros de autenticação
+      if (response.status === 401 || response.status === 403) {
+        const errorData = await response.json().catch(() => ({}));
+        
+        // Se token expirou ou é inválido, fazer logout
+        if (errorData.error?.includes('Token') || errorData.error?.includes('inativo')) {
+          console.warn('🔒 Token inválido ou usuário inativo - fazendo logout');
+          await authService.logout();
+          window.location.reload();
+          return;
+        }
       }
       
-      return await response.json();
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({
+          error: 'Erro de rede',
+          message: `HTTP ${response.status}: ${response.statusText}`
+        }));
+        
+        throw new Error(errorData.message || errorData.error || 'Erro na requisição');
+      }
+      
+      const data = await response.json();
+      console.log(`✅ Resposta recebida de ${endpoint}`);
+      
+      return data;
     } catch (error) {
-      console.error(`API request failed for ${endpoint}:`, error);
+      console.error(`❌ Erro na requisição para ${endpoint}:`, error);
+      
+      // Se erro de rede e usuário está logado, pode ser problema de conectividade
+      if (error.message.includes('Failed to fetch') && authService.isLoggedIn()) {
+        throw new Error('Erro de conexão. Verifique sua internet.');
+      }
+      
       throw error;
     }
   }

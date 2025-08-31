@@ -14,6 +14,8 @@ import { formatCurrency } from './utils/formatCurrency.js';
 import { formatDate, getCurrentDateForInput } from './utils/formatDate.js';
 import { CATEGORY_OPTIONS, EXPENSE_CATEGORIES, CATEGORY_LIMITS, TIME_CATEGORIES, NOTIFICATION_TYPES } from './utils/constants.js';
 import { suggestCategory } from './utils/categoryUtils.js';
+import { authService } from './services/authService.js';
+import LoginForm from './components/Auth/LoginForm.js';
 
 class App {
   constructor() {
@@ -25,7 +27,66 @@ class App {
       valorAdiantamento: 0,
       currentImageData: null,
       originalImageFile: null
-    };
+    }
+
+  /**
+   * Verificar se usuário está autenticado
+   * @returns {Promise<boolean>} Usuário autenticado
+   */
+  async checkAuthentication() {
+    try {
+      if (!authService.isLoggedIn()) {
+        console.log('👤 Usuário não está logado');
+        return false;
+      }
+
+      // Verificar se token é válido
+      const isValid = await authService.verifyToken();
+      
+      if (isValid) {
+        const user = authService.getUser();
+        console.log(`✅ Usuário autenticado: ${user.nome} (${user.email})`);
+        return true;
+      } else {
+        console.log('🔒 Token inválido ou expirado');
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ Erro na verificação de autenticação:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Mostrar formulário de login
+   */
+  showLoginForm() {
+    // Limpar conteúdo da página
+    document.body.innerHTML = '';
+    
+    // Criar e mostrar formulário de login
+    const loginForm = new LoginForm();
+    const loginElement = loginForm.render();
+    document.body.appendChild(loginElement);
+    
+    console.log('🔐 Formulário de login exibido');
+  }
+
+  /**
+   * Fazer logout do usuário
+   */
+  async logout() {
+    try {
+      await authService.logout();
+      console.log('👋 Logout realizado');
+      
+      // Recarregar página para mostrar login
+      window.location.reload();
+    } catch (error) {
+      console.error('❌ Erro no logout:', error);
+      this.showNotification('Erro ao fazer logout', NOTIFICATION_TYPES.ERROR);
+    }
+  };
 
     // Componentes
     this.header = new Header();
@@ -39,7 +100,18 @@ class App {
    */
   async init() {
     try {
-      console.log('Inicializando ND Express...');
+      console.log('🚀 Inicializando ND Express...');
+      
+      // Verificar autenticação primeiro
+      const isAuthenticated = await this.checkAuthentication();
+      
+      if (!isAuthenticated) {
+        this.showLoginForm();
+        return;
+      }
+      
+      // Verificar dependências
+      console.log('📦 Verificando dependências...');
       
       // Renderizar interface
       this.render();
@@ -50,9 +122,12 @@ class App {
       // Carregar dados iniciais
       await this.loadInitialData();
       
-      console.log('ND Express inicializado com sucesso');
+      // Iniciar verificação automática de token
+      authService.startTokenVerification();
+      
+      console.log('✅ ND Express inicializado com sucesso!');
     } catch (error) {
-      console.error('Erro ao inicializar aplicação:', error);
+      console.error('❌ Erro na inicialização:', error);
       this.showNotification('Erro ao inicializar aplicação', NOTIFICATION_TYPES.ERROR);
     }
   }

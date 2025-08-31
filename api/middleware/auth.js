@@ -29,7 +29,7 @@ function authenticateToken(req, res, next) {
     });
   }
   
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+  jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
     if (err) {
       return res.status(403).json({ 
         error: 'Token inválido',
@@ -37,8 +37,36 @@ function authenticateToken(req, res, next) {
       });
     }
     
-    req.user = user;
-    next();
+    // Verificar se usuário ainda está ativo no banco
+    try {
+      const { createClient } = require('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_ANON_KEY
+      );
+      
+      const { data: usuario, error } = await supabase
+        .from('usuarios')
+        .select('id, ativo')
+        .eq('id', user.userId)
+        .single();
+      
+      if (error || !usuario || !usuario.ativo) {
+        return res.status(403).json({
+          error: 'Usuário inativo',
+          message: 'Sua conta foi desativada'
+        });
+      }
+      
+      req.user = user;
+      next();
+    } catch (dbError) {
+      console.error('Erro ao verificar usuário:', dbError);
+      return res.status(500).json({
+        error: 'Erro interno',
+        message: 'Erro ao verificar autenticação'
+      });
+    }
   });
 }
 
