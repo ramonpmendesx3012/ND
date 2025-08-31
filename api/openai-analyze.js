@@ -1,7 +1,7 @@
 // api/openai-analyze.js - Endpoint seguro para análise de imagens
 // Este arquivo deve ser colocado na pasta /api/ para funcionar como serverless function no Vercel
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Configurar CORS e headers de segurança
   res.setHeader('Access-Control-Allow-Origin', process.env.VERCEL_URL || 'http://localhost:8000');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');

@@ -361,15 +361,19 @@ class App {
       console.log('🔄 Carregando dados iniciais...');
       showLoading('Carregando dados...');
       
-      // Modo offline/demo - inicializar sem APIs
-      console.log('⚠️ Modo demo - sem conexão com APIs');
-      this.state.currentNdId = 'demo-nd-001';
-      this.state.ndCounter = 1;
-      this.state.expenses = [];
-      this.state.valorAdiantamento = 0;
+      // Buscar ND aberta
+      const openND = await ndService.fetchOpenND();
+      
+      if (openND) {
+        // Restaurar sessão existente
+        await this.restoreSession(openND);
+      } else {
+        // Criar nova ND
+        await this.createNewND();
+      }
       
       this.updateInterface();
-      console.log('✅ Dados iniciais carregados (modo demo)');
+      console.log('✅ Dados iniciais carregados');
     } catch (error) {
       console.error('Erro ao carregar dados iniciais:', error);
       this.showNotification('Erro ao carregar dados', NOTIFICATION_TYPES.ERROR);
@@ -643,23 +647,25 @@ class App {
     try {
       showLoading('Analisando comprovante com IA...');
       
-      // Modo demo - simular análise da IA
-      console.log('⚠️ Modo demo - simulando análise da IA');
+      // Fazer análise via API
+      const response = await fetch('/api/openai-analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64 })
+      });
       
-      // Simular delay de processamento
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (!response.ok) {
+        throw new Error('Erro na análise da IA');
+      }
       
-      // Dados simulados para demonstração
-      const demoData = {
-        date: getCurrentDateForInput(),
-        value: (Math.random() * 100 + 10).toFixed(2),
-        category: CATEGORY_OPTIONS[Math.floor(Math.random() * CATEGORY_OPTIONS.length)],
-        description: 'Despesa identificada automaticamente (demo)',
-        confidence: Math.floor(Math.random() * 20 + 80) // 80-100%
-      };
+      const result = await response.json();
       
-      this.populateFormWithAIData(demoData);
-      this.showNotification('Comprovante analisado com sucesso! (modo demo)', NOTIFICATION_TYPES.SUCCESS);
+      if (result.success && result.data) {
+        this.populateFormWithAIData(result.data);
+        this.showNotification('Comprovante analisado com sucesso!', NOTIFICATION_TYPES.SUCCESS);
+      } else {
+        throw new Error('Dados inválidos retornados pela IA');
+      }
       
     } catch (error) {
       console.error('Erro na análise da IA:', error);
@@ -744,36 +750,35 @@ class App {
       
       showLoading('Salvando despesa...');
       
-      // Modo demo - simular processamento
-      console.log('⚠️ Modo demo - simulando salvamento de despesa');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Simular URL da imagem
+      // Upload da imagem
       let imageUrl = 'https://via.placeholder.com/150';
-      if (this.state.originalImageFile) {
-        imageUrl = URL.createObjectURL(this.state.originalImageFile);
+      if (this.state.originalImageFile && this.state.currentImageData) {
+        imageUrl = await storageService.uploadImage(this.state.originalImageFile);
       }
       
-      // Criar despesa local para demo
-      const localExpense = {
-        id: 'demo-' + Date.now(),
+      // Preparar dados para inserção
+      const launchData = {
+        ndId: this.state.currentNdId,
         date: formData.date,
         value: formData.value,
         description: formData.description,
         category: formData.category,
         imageUrl: imageUrl,
-        confidence: formData.confidence,
-        timestamp: new Date().toISOString()
+        confidence: formData.confidence
       };
       
+      // Inserir no banco
+      const newLaunch = await launchService.addLaunch(launchData);
+      
       // Adicionar à lista local
+      const localExpense = launchService.convertToLocalFormat(newLaunch);
       this.state.expenses.push(localExpense);
       
       // Atualizar interface
       this.updateInterface();
       this.clearForm();
       
-      this.showNotification('Despesa adicionada com sucesso! (modo demo)', NOTIFICATION_TYPES.SUCCESS);
+      this.showNotification('Despesa adicionada com sucesso!', NOTIFICATION_TYPES.SUCCESS);
       
     } catch (error) {
       console.error('Erro ao confirmar despesa:', error);
@@ -829,9 +834,7 @@ class App {
     try {
       showLoading('Excluindo despesa...');
       
-      // Modo demo - simular exclusão
-      console.log('⚠️ Modo demo - simulando exclusão de despesa');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await launchService.deleteLaunch(expenseId);
       
       // Remover da lista local
       this.state.expenses = this.state.expenses.filter(exp => exp.id !== expenseId);
@@ -839,7 +842,7 @@ class App {
       // Atualizar interface
       this.updateInterface();
       
-      this.showNotification('Despesa excluída com sucesso! (modo demo)', NOTIFICATION_TYPES.SUCCESS);
+      this.showNotification('Despesa excluída com sucesso!', NOTIFICATION_TYPES.SUCCESS);
       
     } catch (error) {
       console.error('Erro ao excluir despesa:', error);
@@ -860,17 +863,16 @@ class App {
   async handleDownloadReceipts() {
     try {
       // Verificar se há comprovantes disponíveis
-      const expensesWithImages = this.state.expenses.filter(exp => 
-        exp.imageUrl && exp.imageUrl !== 'https://via.placeholder.com/150'
-      );
+      const receiptInfo = downloadService.checkAvailableReceipts(this.state.expenses);
       
-      if (expensesWithImages.length === 0) {
+      if (!receiptInfo.hasDownloadableReceipts) {
         this.showNotification('Nenhum comprovante disponível para download', NOTIFICATION_TYPES.WARNING);
         return;
       }
       
       // Mostrar informações e confirmar download
-      const message = `Baixar ${expensesWithImages.length} comprovante(s)?\n\nModo demo - funcionalidade simulada.`;
+      const estimatedSize = downloadService.estimateDownloadSize(this.state.expenses);
+      const message = `Baixar ${receiptInfo.withImages} comprovante(s)?\n\nTamanho estimado: ${estimatedSize}\n\nOs arquivos serão baixados em um arquivo ZIP com resolução original.`;
       
       if (!confirm(message)) {
         return;
@@ -878,12 +880,11 @@ class App {
       
       showLoading('Preparando download dos comprovantes...');
       
-      // Modo demo - simular download
-      console.log('⚠️ Modo demo - simulando download de comprovantes');
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const ndNumber = ndService.generateNextNDNumber(this.state.ndCounter);
+      const result = await downloadService.downloadAllReceipts(this.state.expenses, ndNumber);
       
       this.showNotification(
-        `Download simulado! ${expensesWithImages.length} comprovantes (modo demo)`,
+        `Download concluído! ${result.downloaded} de ${result.total} comprovantes baixados.`,
         NOTIFICATION_TYPES.SUCCESS
       );
       
@@ -901,7 +902,7 @@ class App {
       return;
     }
     
-    if (!confirm('Deseja fechar esta ND e exportar os dados?\n\nModo demo - funcionalidade simulada.')) {
+    if (!confirm('Deseja fechar esta ND e exportar os dados?\n\nApós fechar, não será possível adicionar mais lançamentos.')) {
       return;
     }
     
@@ -909,14 +910,22 @@ class App {
       showLoading('Exportando ND...');
       
       const description = document.getElementById('travelDescription')?.value || 'Viagem de Negócios';
-      const ndNumber = `ND${String(this.state.ndCounter).padStart(3, '0')}`;
+      const ndNumber = ndService.generateNextNDNumber(this.state.ndCounter);
       const total = this.calculateTotal();
       
-      // Modo demo - simular exportação
-      console.log('⚠️ Modo demo - simulando exportação de ND');
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Finalizar ND no banco
+      await ndService.finalizeND(this.state.currentNdId, description);
       
-      this.showNotification(`ND ${ndNumber} exportada com sucesso! (modo demo)`, NOTIFICATION_TYPES.SUCCESS);
+      // Gerar relatório Excel
+      await reportService.generateExcelFile(
+        this.state.expenses,
+        ndNumber,
+        description,
+        total,
+        this.state.valorAdiantamento
+      );
+      
+      this.showNotification(`ND ${ndNumber} fechada e exportada com sucesso!`, NOTIFICATION_TYPES.SUCCESS);
       
       // Preparar nova ND
       setTimeout(() => this.prepareNewND(), 2000);
@@ -966,9 +975,8 @@ class App {
     this.state.ndCounter++;
     this.state.valorAdiantamento = 0;
     
-    // Modo demo - simular criação de nova ND
-    console.log('⚠️ Modo demo - preparando nova ND');
-    this.state.currentNdId = `demo-nd-${String(this.state.ndCounter).padStart(3, '0')}`;
+    // Criar nova ND
+    await this.createNewND();
     
     // Limpar interface
     const travelDesc = document.getElementById('travelDescription');
