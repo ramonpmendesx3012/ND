@@ -13,6 +13,7 @@ import { downloadService } from './services/downloadService.js';
 import { formatCurrency } from './utils/formatCurrency.js';
 import { formatDate, getCurrentDateForInput } from './utils/formatDate.js';
 import { CATEGORY_OPTIONS, EXPENSE_CATEGORIES, CATEGORY_LIMITS, TIME_CATEGORIES, NOTIFICATION_TYPES } from './utils/constants.js';
+import { suggestCategory } from './utils/categoryUtils.js';
 
 class App {
   constructor() {
@@ -675,6 +676,8 @@ class App {
     }
   }
 
+
+
   populateFormWithAIData(data) {
     // Preencher data
     if (data.date) {
@@ -693,11 +696,14 @@ class App {
       }
     }
     
+    // Categorização automática inteligente usando utilitário
+    const suggestedCategory = suggestCategory(data.description, data.category);
+    
     // Preencher categoria
-    if (data.category) {
+    if (suggestedCategory) {
       const categorySelect = document.getElementById('category');
       if (categorySelect) {
-        categorySelect.value = data.category;
+        categorySelect.value = suggestedCategory;
       }
     }
     
