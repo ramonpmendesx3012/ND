@@ -1,7 +1,7 @@
 // Serviço de autenticação
 // Gerencia login, logout, registro e verificação de token
 
-import { request } from '../config/apiClient.js';
+import { apiClient } from '../config/apiClient.js';
 
 class AuthService {
   constructor() {
@@ -21,7 +21,7 @@ class AuthService {
    */
   async register(userData) {
     try {
-      const response = await request('/auth/register', {
+      const response = await apiClient.request('/auth/register', {
         method: 'POST',
         body: userData
       });
@@ -46,7 +46,7 @@ class AuthService {
    */
   async login(email, senha) {
     try {
-      const response = await request('/auth/login', {
+      const response = await apiClient.request('/auth/login', {
         method: 'POST',
         body: { email, senha }
       });
@@ -79,7 +79,7 @@ class AuthService {
     try {
       if (this.token) {
         // Tentar invalidar token no servidor
-        await request('/auth/logout', {
+        await apiClient.request('/auth/logout', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${this.token}`
@@ -113,7 +113,7 @@ class AuthService {
     }
 
     try {
-      const response = await request('/auth/verify', {
+      const response = await apiClient.request('/auth/verify', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.token}`

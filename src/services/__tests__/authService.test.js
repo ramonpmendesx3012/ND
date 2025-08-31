@@ -21,7 +21,10 @@ Object.defineProperty(window, 'localStorage', {
 global.setInterval = jest.fn();
 global.clearInterval = jest.fn();
 
-import { request } from '../../config/apiClient.js';
+import { apiClient } from '../../config/apiClient.js';
+
+// Mock do apiClient
+apiClient.request = jest.fn();
 
 describe('authService', () => {
   beforeEach(() => {
@@ -54,11 +57,11 @@ describe('authService', () => {
         }
       };
 
-      request.mockResolvedValue(mockResponse);
+      apiClient.request.mockResolvedValue(mockResponse);
 
       const result = await authService.register(userData);
 
-      expect(request).toHaveBeenCalledWith('/auth/register', {
+      expect(apiClient.request).toHaveBeenCalledWith('/auth/register', {
         method: 'POST',
         body: userData
       });
@@ -73,7 +76,7 @@ describe('authService', () => {
         senha: 'senha123'
       };
 
-      request.mockRejectedValue(new Error('Email já existe'));
+      apiClient.request.mockRejectedValue(new Error('Email já existe'));
 
       await expect(authService.register(userData))
         .rejects.toThrow('Email já existe');
@@ -99,11 +102,11 @@ describe('authService', () => {
         }
       };
 
-      request.mockResolvedValue(mockResponse);
+      apiClient.request.mockResolvedValue(mockResponse);
 
       const result = await authService.login(credentials.email, credentials.senha);
 
-      expect(request).toHaveBeenCalledWith('/auth/login', {
+      expect(apiClient.request).toHaveBeenCalledWith('/auth/login', {
         method: 'POST',
         body: credentials
       });
@@ -119,7 +122,7 @@ describe('authService', () => {
     });
 
     test('lança erro quando login falha', async () => {
-      request.mockRejectedValue(new Error('Credenciais inválidas'));
+      apiClient.request.mockRejectedValue(new Error('Credenciais inválidas'));
 
       await expect(authService.login('email@teste.com', 'senhaerrada'))
         .rejects.toThrow('Credenciais inválidas');
@@ -138,11 +141,11 @@ describe('authService', () => {
         message: 'Logout realizado com sucesso'
       };
 
-      request.mockResolvedValue(mockResponse);
+      apiClient.request.mockResolvedValue(mockResponse);
 
       const result = await authService.logout();
 
-      expect(request).toHaveBeenCalledWith('/auth/logout', {
+      expect(apiClient.request).toHaveBeenCalledWith('/auth/logout', {
         method: 'POST',
         headers: {
           'Authorization': 'Bearer jwt-token-123'
@@ -162,7 +165,7 @@ describe('authService', () => {
     test('faz logout mesmo quando API falha', async () => {
       authService.token = 'jwt-token-123';
       
-      request.mockRejectedValue(new Error('Erro de rede'));
+      apiClient.request.mockRejectedValue(new Error('Erro de rede'));
 
       const result = await authService.logout();
 
@@ -189,11 +192,11 @@ describe('authService', () => {
         }
       };
 
-      request.mockResolvedValue(mockResponse);
+      apiClient.request.mockResolvedValue(mockResponse);
 
       const result = await authService.verifyToken();
 
-      expect(request).toHaveBeenCalledWith('/auth/verify', {
+      expect(apiClient.request).toHaveBeenCalledWith('/auth/verify', {
         method: 'POST',
         headers: {
           'Authorization': 'Bearer jwt-token-123'
@@ -207,7 +210,7 @@ describe('authService', () => {
     test('retorna false para token inválido', async () => {
       authService.token = 'invalid-token';
       
-      request.mockRejectedValue(new Error('Token inválido'));
+      apiClient.request.mockRejectedValue(new Error('Token inválido'));
 
       const result = await authService.verifyToken();
 
@@ -223,7 +226,7 @@ describe('authService', () => {
       const result = await authService.verifyToken();
 
       expect(result).toBe(false);
-      expect(request).not.toHaveBeenCalled();
+      expect(apiClient.request).not.toHaveBeenCalled();
     });
   });
 
