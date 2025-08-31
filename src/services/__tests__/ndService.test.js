@@ -1,17 +1,23 @@
-// Testes para ndService
+// Testes para ndService - Integração com Supabase
 import { ndService } from '../ndService.js';
 
-// Mock do apiClient
-jest.mock('../../config/apiClient.js', () => ({
-  apiClient: {
-    query: jest.fn(),
-    insert: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn()
+// Mock do Supabase
+jest.mock('../../config/supabaseClient.js', () => ({
+  __esModule: true,
+  default: {
+    from: jest.fn(() => ({
+      select: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockReturnThis(),
+      update: jest.fn().mockReturnThis(),
+      delete: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      single: jest.fn()
+    }))
   }
 }));
 
-import { apiClient } from '../../config/apiClient.js';
+import supabase from '../../config/supabaseClient.js';
 
 describe('ndService', () => {
   beforeEach(() => {
@@ -20,32 +26,42 @@ describe('ndService', () => {
 
   describe('fetchOpenND', () => {
     test('busca ND aberta com sucesso', async () => {
-      const mockResponse = {
-        data: [{
-          id: 'nd-123',
-          numero_nd: 'ND-001',
-          descricao: 'Viagem SP',
-          status: 'aberta',
-          valor_adiantamento: 1000.00
-        }]
+      const mockData = {
+        id: 'nd-123',
+        numero_nd: 'ND-001',
+        descricao: 'Viagem SP',
+        status: 'aberta',
+        valor_adiantamento: 1000.00
       };
 
-      apiClient.query.mockResolvedValue(mockResponse);
+      const mockChain = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: mockData, error: null })
+      };
+
+      supabase.from.mockReturnValue(mockChain);
 
       const result = await ndService.fetchOpenND();
 
-      expect(apiClient.query).toHaveBeenCalledWith('nd_viagens', {
-        filters: [{ column: 'status', operator: 'eq', value: 'aberta' }],
-        limit: 1
-      });
-
-      expect(result).toEqual(mockResponse.data[0]);
+      expect(supabase.from).toHaveBeenCalledWith('nd_viagens');
+      expect(mockChain.select).toHaveBeenCalledWith('*');
+      expect(mockChain.eq).toHaveBeenCalledWith('status', 'aberta');
+      expect(mockChain.limit).toHaveBeenCalledWith(1);
+      expect(mockChain.single).toHaveBeenCalled();
+      expect(result).toEqual(mockData);
     });
 
     test('retorna null quando não há ND aberta', async () => {
-      const mockResponse = { data: [] };
+      const mockChain = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } })
+      };
 
-      apiClient.query.mockResolvedValue(mockResponse);
+      supabase.from.mockReturnValue(mockChain);
 
       const result = await ndService.fetchOpenND();
 
@@ -58,63 +74,79 @@ describe('ndService', () => {
       const numero = 'ND-001';
       const descricao = 'Viagem de negócios';
 
-      const mockResponse = {
-        data: [{
-          id: 'nd-123',
-          numero_nd: numero,
-          descricao: descricao,
-          status: 'aberta',
-          valor_adiantamento: 0.00,
-          created_at: '2024-01-15T12:00:00Z'
-        }]
+      const mockData = {
+        id: 'nd-123',
+        numero_nd: numero,
+        descricao: descricao,
+        status: 'aberta',
+        valor_adiantamento: 0.00,
+        created_at: '2024-01-15T12:00:00Z'
       };
 
-      apiClient.insert.mockResolvedValue(mockResponse);
+      const mockChain = {
+        insert: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: mockData, error: null })
+      };
+
+      supabase.from.mockReturnValue(mockChain);
 
       const result = await ndService.createND(numero, descricao);
 
-      expect(apiClient.insert).toHaveBeenCalledWith('nd_viagens', {
+      expect(supabase.from).toHaveBeenCalledWith('nd_viagens');
+      expect(mockChain.insert).toHaveBeenCalledWith({
         numero_nd: numero,
         descricao: descricao,
         status: 'aberta',
         valor_adiantamento: 0.00
       });
-
-      expect(result).toEqual(mockResponse.data[0]);
+      expect(mockChain.select).toHaveBeenCalled();
+      expect(mockChain.single).toHaveBeenCalled();
+      expect(result).toEqual(mockData);
     });
 
     test('cria ND com descrição padrão', async () => {
       const numero = 'ND-002';
 
-      const mockResponse = {
-        data: [{
-          id: 'nd-124',
-          numero_nd: numero,
-          descricao: 'Nova Nota de Despesa',
-          status: 'aberta',
-          valor_adiantamento: 0.00
-        }]
+      const mockData = {
+        id: 'nd-124',
+        numero_nd: numero,
+        descricao: 'Nova Nota de Despesa',
+        status: 'aberta',
+        valor_adiantamento: 0.00
       };
 
-      apiClient.insert.mockResolvedValue(mockResponse);
+      const mockChain = {
+        insert: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: mockData, error: null })
+      };
+
+      supabase.from.mockReturnValue(mockChain);
 
       const result = await ndService.createND(numero);
 
-      expect(apiClient.insert).toHaveBeenCalledWith('nd_viagens', {
+      expect(mockChain.insert).toHaveBeenCalledWith({
         numero_nd: numero,
         descricao: 'Nova Nota de Despesa',
         status: 'aberta',
         valor_adiantamento: 0.00
       });
-
-      expect(result).toEqual(mockResponse.data[0]);
+      expect(result).toEqual(mockData);
     });
 
     test('lança erro quando falha ao criar ND', async () => {
       const numero = 'ND-001';
       const descricao = 'Viagem de negócios';
 
-      apiClient.insert.mockRejectedValue(new Error('Erro de rede'));
+      const errorObj = new Error('Erro de rede');
+      const mockChain = {
+        insert: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: null, error: errorObj })
+      };
+
+      supabase.from.mockReturnValue(mockChain);
 
       await expect(ndService.createND(numero, descricao))
         .rejects.toThrow('Erro de rede');
@@ -125,36 +157,48 @@ describe('ndService', () => {
     test('finaliza ND com sucesso', async () => {
       const ndId = 'nd-123';
       const descricao = 'Viagem finalizada';
-      const mockResponse = {
-        data: [{
-          id: ndId,
-          status: 'fechada',
-          descricao: descricao,
-          updated_at: '2024-01-15T12:00:00Z'
-        }]
+
+      const mockData = {
+        id: ndId,
+        descricao: descricao,
+        status: 'fechada',
+        updated_at: '2024-01-15T15:00:00Z'
       };
 
-      apiClient.update.mockResolvedValue(mockResponse);
+      const mockChain = {
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: mockData, error: null })
+      };
+
+      supabase.from.mockReturnValue(mockChain);
 
       const result = await ndService.finalizeND(ndId, descricao);
 
-      expect(apiClient.update).toHaveBeenCalledWith('nd_viagens', 
-        { 
-          descricao: descricao,
-          status: 'fechada',
-          updated_at: expect.any(String)
-        },
-        [{ column: 'id', operator: 'eq', value: ndId }]
-      );
-
-      expect(result).toEqual(mockResponse.data[0]);
+      expect(supabase.from).toHaveBeenCalledWith('nd_viagens');
+      expect(mockChain.update).toHaveBeenCalledWith({
+        descricao: descricao,
+        status: 'fechada',
+        updated_at: expect.any(String)
+      });
+      expect(mockChain.eq).toHaveBeenCalledWith('id', ndId);
+      expect(result).toEqual(mockData);
     });
 
     test('lança erro quando falha ao finalizar ND', async () => {
       const ndId = 'nd-123';
       const descricao = 'Viagem finalizada';
 
-      apiClient.update.mockRejectedValue(new Error('ND não encontrada'));
+      const errorObj = new Error('ND não encontrada');
+      const mockChain = {
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: null, error: errorObj })
+      };
+
+      supabase.from.mockReturnValue(mockChain);
 
       await expect(ndService.finalizeND(ndId, descricao))
         .rejects.toThrow('ND não encontrada');
@@ -165,31 +209,41 @@ describe('ndService', () => {
     test('atualiza valor de adiantamento com sucesso', async () => {
       const ndId = 'nd-123';
       const valor = 1500.00;
-      const mockResponse = {
-        data: [{
-          id: ndId,
-          valor_adiantamento: valor,
-          updated_at: '2024-01-15T12:00:00Z'
-        }]
+
+      const mockData = {
+        id: ndId,
+        valor_adiantamento: valor
       };
 
-      apiClient.update.mockResolvedValue(mockResponse);
+      const mockChain = {
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: mockData, error: null })
+      };
+
+      supabase.from.mockReturnValue(mockChain);
 
       const result = await ndService.updateAdiantamento(ndId, valor);
 
-      expect(apiClient.update).toHaveBeenCalledWith('nd_viagens', 
-        { valor_adiantamento: valor },
-        [{ column: 'id', operator: 'eq', value: ndId }]
-      );
-
-      expect(result).toEqual(mockResponse.data[0]);
+      expect(mockChain.update).toHaveBeenCalledWith({ valor_adiantamento: valor });
+      expect(mockChain.eq).toHaveBeenCalledWith('id', ndId);
+      expect(result).toEqual(mockData);
     });
 
     test('lança erro quando falha ao atualizar adiantamento', async () => {
       const ndId = 'nd-123';
       const valor = 1500.00;
 
-      apiClient.update.mockRejectedValue(new Error('ND não encontrada'));
+      const errorObj = new Error('ND não encontrada');
+      const mockChain = {
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: null, error: errorObj })
+      };
+
+      supabase.from.mockReturnValue(mockChain);
 
       await expect(ndService.updateAdiantamento(ndId, valor))
         .rejects.toThrow('ND não encontrada');
@@ -199,32 +253,42 @@ describe('ndService', () => {
   describe('updateDescription', () => {
     test('atualiza descrição da ND com sucesso', async () => {
       const ndId = 'nd-123';
-      const descricao = 'Nova descrição da viagem';
-      const mockResponse = {
-        data: [{
-          id: ndId,
-          descricao: descricao,
-          updated_at: '2024-01-15T12:00:00Z'
-        }]
+      const descricao = 'Nova descrição';
+
+      const mockData = {
+        id: ndId,
+        descricao: descricao
       };
 
-      apiClient.update.mockResolvedValue(mockResponse);
+      const mockChain = {
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: mockData, error: null })
+      };
+
+      supabase.from.mockReturnValue(mockChain);
 
       const result = await ndService.updateDescription(ndId, descricao);
 
-      expect(apiClient.update).toHaveBeenCalledWith('nd_viagens', 
-        { descricao: descricao },
-        [{ column: 'id', operator: 'eq', value: ndId }]
-      );
-
-      expect(result).toEqual(mockResponse.data[0]);
+      expect(mockChain.update).toHaveBeenCalledWith({ descricao: descricao });
+      expect(mockChain.eq).toHaveBeenCalledWith('id', ndId);
+      expect(result).toEqual(mockData);
     });
 
     test('lança erro quando falha ao atualizar descrição', async () => {
       const ndId = 'nd-123';
       const descricao = 'Nova descrição';
 
-      apiClient.update.mockRejectedValue(new Error('ND não encontrada'));
+      const errorObj = new Error('ND não encontrada');
+      const mockChain = {
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: null, error: errorObj })
+      };
+
+      supabase.from.mockReturnValue(mockChain);
 
       await expect(ndService.updateDescription(ndId, descricao))
         .rejects.toThrow('ND não encontrada');
@@ -234,57 +298,63 @@ describe('ndService', () => {
   describe('getNDData', () => {
     test('busca dados da ND com sucesso', async () => {
       const ndId = 'nd-123';
-      const mockResponse = {
-        data: [{
-          id: ndId,
-          numero_nd: 'ND-001',
-          descricao: 'Viagem SP',
-          status: 'aberta',
-          valor_adiantamento: 1000.00
-        }]
+
+      const mockData = {
+        id: ndId,
+        numero_nd: 'ND-001',
+        descricao: 'Viagem SP',
+        status: 'aberta'
       };
 
-      apiClient.query.mockResolvedValue(mockResponse);
+      const mockChain = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: mockData, error: null })
+      };
+
+      supabase.from.mockReturnValue(mockChain);
 
       const result = await ndService.getNDData(ndId);
 
-      expect(apiClient.query).toHaveBeenCalledWith('nd_viagens', {
-        select: '*',
-        filters: [{ column: 'id', operator: 'eq', value: ndId }],
-        limit: 1
-      });
-
-      expect(result).toEqual(mockResponse.data[0]);
+      expect(mockChain.select).toHaveBeenCalledWith('*');
+      expect(mockChain.eq).toHaveBeenCalledWith('id', ndId);
+      expect(result).toEqual(mockData);
     });
 
     test('busca dados específicos da ND', async () => {
       const ndId = 'nd-123';
-      const select = 'numero_nd, descricao';
-      const mockResponse = {
-        data: [{
-          numero_nd: 'ND-001',
-          descricao: 'Viagem SP'
-        }]
+      const select = 'id, numero_nd, status';
+
+      const mockData = {
+        id: ndId,
+        numero_nd: 'ND-001',
+        status: 'aberta'
       };
 
-      apiClient.query.mockResolvedValue(mockResponse);
+      const mockChain = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: mockData, error: null })
+      };
+
+      supabase.from.mockReturnValue(mockChain);
 
       const result = await ndService.getNDData(ndId, select);
 
-      expect(apiClient.query).toHaveBeenCalledWith('nd_viagens', {
-        select: select,
-        filters: [{ column: 'id', operator: 'eq', value: ndId }],
-        limit: 1
-      });
-
-      expect(result).toEqual(mockResponse.data[0]);
+      expect(mockChain.select).toHaveBeenCalledWith(select);
+      expect(result).toEqual(mockData);
     });
 
     test('retorna null quando ND não é encontrada', async () => {
       const ndId = 'nd-inexistente';
-      const mockResponse = { data: [] };
 
-      apiClient.query.mockResolvedValue(mockResponse);
+      const mockChain = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } })
+      };
+
+      supabase.from.mockReturnValue(mockChain);
 
       const result = await ndService.getNDData(ndId);
 
@@ -294,24 +364,18 @@ describe('ndService', () => {
 
   describe('generateNextNDNumber', () => {
     test('gera próximo número de ND', () => {
-      const counter = 1;
-      const result = ndService.generateNextNDNumber(counter);
-      
+      const result = ndService.generateNextNDNumber(1);
       expect(result).toBe('ND001');
     });
 
     test('gera número com zero padding', () => {
-      const counter = 25;
-      const result = ndService.generateNextNDNumber(counter);
-      
-      expect(result).toBe('ND025');
+      const result = ndService.generateNextNDNumber(5);
+      expect(result).toBe('ND005');
     });
 
     test('gera número para contador maior', () => {
-      const counter = 999;
-      const result = ndService.generateNextNDNumber(counter);
-      
-      expect(result).toBe('ND999');
+      const result = ndService.generateNextNDNumber(123);
+      expect(result).toBe('ND123');
     });
   });
 });

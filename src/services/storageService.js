@@ -1,5 +1,6 @@
-// Serviço para upload e gerenciamento de imagens
-import { apiClient } from '../config/apiClient.js';
+// FASE 4: Serviço para upload e gerenciamento de imagens
+// Integração direta com Supabase Storage
+import supabase from '../config/supabaseClient.js';
 import { FILE_CONFIG } from '../utils/constants.js';
 
 class StorageService {
@@ -13,13 +14,27 @@ class StorageService {
       // Validar arquivo
       this.validateFile(file);
       
-      // Converter arquivo para base64
-      const base64 = await this.fileToBase64(file);
+      // Gerar nome único para o arquivo
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}_${file.name}`;
       
-      // Fazer upload via API
-      const response = await apiClient.upload(base64, file.name);
+      // Fazer upload diretamente para o Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('comprovantes')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
       
-      return response.data.publicUrl;
+      if (error) {
+        throw error;
+      }
+      
+      // Obter URL pública
+      const { data: publicUrlData } = supabase.storage
+        .from('comprovantes')
+        .getPublicUrl(fileName);
+      
+      return publicUrlData.publicUrl;
     } catch (error) {
       console.error('Erro no upload da imagem:', error);
       throw error;

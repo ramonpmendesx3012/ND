@@ -31,7 +31,7 @@
 - ✅ Validação robusta de dados obrigatórios
 - ✅ Tratamento de erros
 
-#### **3. authService (17/17 testes) - 100% ✅**
+#### **3. authService - REMOVIDO ❌**
 - ✅ Registro de usuários
 - ✅ Login com JWT
 - ✅ Logout e invalidação de sessões
@@ -67,7 +67,7 @@
 ## 🔧 **Melhorias Implementadas nos Testes**
 
 ### **1. Sistema de Autenticação Completo**
-- ✅ Criado `authService.test.js` com 27 testes
+- ❌ Removido `authService.test.js` - autenticação eliminada
 - ✅ Cobertura completa de registro, login, logout
 - ✅ Validação de email e CPF
 - ✅ Gerenciamento de tokens JWT
@@ -103,7 +103,7 @@
 | **launchService.js** | 59.25% | ✅ Bom |
 | **storageService.js** | 59.67% | ✅ Bom |
 | **constants.js** | 100% | ✅ Perfeito |
-| **authService.js** | 0%* | ⚠️ Não executado |
+| **authService.js** | N/A | ❌ Removido |
 | **APIs** | 0%* | ⚠️ Não executado |
 | **Componentes** | 0%* | ⚠️ Não executado |
 
@@ -124,7 +124,7 @@ npm run test:coverage # ✅ Relatório de cobertura
 ```bash
 npm test categoryUtils  # ✅ 17/17 testes passando
 npm test launchService  # ✅ 13/13 testes passando
-npm test authService    # ✅ 17/17 testes passando
+# npm test authService  # ❌ Removido - sem autenticação
 npm test storageService # ✅ 14/14 testes passando
 npm test ndService      # ✅ 15/15 testes passando
 ```

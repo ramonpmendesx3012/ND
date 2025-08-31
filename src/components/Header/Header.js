@@ -1,6 +1,6 @@
 // Componente do cabeçalho da aplicação
 import { formatCurrency } from '../../utils/formatCurrency.js';
-import { authService } from '../../services/authService.js';
+// Import de authService removido
 
 class Header {
   constructor() {
@@ -68,47 +68,7 @@ class Header {
           </div>
         </div>
 
-        <div class="header-user-info" style="
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-3);
-          background-color: rgba(255, 255, 255, 0.1);
-          padding: var(--spacing-2) var(--spacing-3);
-          border-radius: var(--border-radius);
-        ">
-          <div class="user-avatar" style="
-            width: 32px;
-            height: 32px;
-            background-color: var(--white);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: var(--primary-color);
-            font-size: var(--font-size-sm);
-          ">${authService.getCurrentUser()?.name?.charAt(0) || 'U'}</div>
-          <div class="user-details">
-            <div style="
-              font-size: var(--font-size-sm);
-              font-weight: 500;
-            ">${authService.getCurrentUser()?.name || 'Usuário'}</div>
-            <div style="
-              font-size: var(--font-size-xs);
-              opacity: 0.8;
-            ">${authService.getCurrentUser()?.email || ''}</div>
-          </div>
-          <button class="logout-btn" style="
-            background: none;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: var(--white);
-            padding: var(--spacing-1) var(--spacing-2);
-            border-radius: var(--border-radius);
-            font-size: var(--font-size-xs);
-            cursor: pointer;
-            transition: all 0.2s ease;
-          " onclick="authService.logout()">Sair</button>
-        </div>
+        <!-- Seção de usuário removida -->
 
         <div class="header-info" style="
           display: flex;

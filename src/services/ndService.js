@@ -1,5 +1,6 @@
-// Serviço para operações relacionadas às Notas de Despesa (ND)
-import { apiClient } from '../config/apiClient.js';
+// FASE 3: Serviço para operações relacionadas às Notas de Despesa (ND)
+// Integração direta com Supabase
+import supabase from '../config/supabaseClient.js';
 import { ND_STATUS } from '../utils/constants.js';
 
 class NDService {
@@ -9,12 +10,18 @@ class NDService {
    */
   async fetchOpenND() {
     try {
-      const response = await apiClient.query('nd_viagens', {
-        filters: [{ column: 'status', operator: 'eq', value: ND_STATUS.ABERTA }],
-        limit: 1
-      });
+      const { data, error } = await supabase
+        .from('nd_viagens')
+        .select('*')
+        .eq('status', ND_STATUS.ABERTA)
+        .limit(1)
+        .single();
       
-      return response.data && response.data.length > 0 ? response.data[0] : null;
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        throw error;
+      }
+      
+      return data || null;
     } catch (error) {
       console.error('Erro ao buscar ND aberta:', error);
       throw error;
@@ -29,14 +36,22 @@ class NDService {
    */
   async createND(numero, descricao = 'Nova Nota de Despesa') {
     try {
-      const response = await apiClient.insert('nd_viagens', {
-        numero_nd: numero,
-        descricao: descricao,
-        status: ND_STATUS.ABERTA,
-        valor_adiantamento: 0.00
-      });
+      const { data, error } = await supabase
+        .from('nd_viagens')
+        .insert({
+          numero_nd: numero,
+          descricao: descricao,
+          status: ND_STATUS.ABERTA,
+          valor_adiantamento: 0.00
+        })
+        .select()
+        .single();
       
-      return response.data[0];
+      if (error) {
+        throw error;
+      }
+      
+      return data;
     } catch (error) {
       console.error('Erro ao criar ND:', error);
       throw error;
@@ -51,16 +66,22 @@ class NDService {
    */
   async finalizeND(ndId, descricao) {
     try {
-      const response = await apiClient.update('nd_viagens',
-        {
+      const { data, error } = await supabase
+        .from('nd_viagens')
+        .update({
           descricao: descricao,
           status: ND_STATUS.FECHADA,
-          updated_at: new Date().toISOString(),
-        },
-        [{ column: 'id', operator: 'eq', value: ndId }]
-      );
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', ndId)
+        .select()
+        .single();
       
-      return response.data[0];
+      if (error) {
+        throw error;
+      }
+      
+      return data;
     } catch (error) {
       console.error('Erro ao finalizar ND:', error);
       throw error;
@@ -75,12 +96,18 @@ class NDService {
    */
   async updateAdiantamento(ndId, valor) {
     try {
-      const response = await apiClient.update('nd_viagens',
-        { valor_adiantamento: valor },
-        [{ column: 'id', operator: 'eq', value: ndId }]
-      );
+      const { data, error } = await supabase
+        .from('nd_viagens')
+        .update({ valor_adiantamento: valor })
+        .eq('id', ndId)
+        .select()
+        .single();
       
-      return response.data[0];
+      if (error) {
+        throw error;
+      }
+      
+      return data;
     } catch (error) {
       console.error('Erro ao atualizar adiantamento:', error);
       throw error;
@@ -95,12 +122,18 @@ class NDService {
    */
   async updateDescription(ndId, descricao) {
     try {
-      const response = await apiClient.update('nd_viagens',
-        { descricao: descricao },
-        [{ column: 'id', operator: 'eq', value: ndId }]
-      );
+      const { data, error } = await supabase
+        .from('nd_viagens')
+        .update({ descricao: descricao })
+        .eq('id', ndId)
+        .select()
+        .single();
       
-      return response.data[0];
+      if (error) {
+        throw error;
+      }
+      
+      return data;
     } catch (error) {
       console.error('Erro ao atualizar descrição da ND:', error);
       throw error;
@@ -115,13 +148,17 @@ class NDService {
    */
   async getNDData(ndId, select = '*') {
     try {
-      const response = await apiClient.query('nd_viagens', {
-        select: select,
-        filters: [{ column: 'id', operator: 'eq', value: ndId }],
-        limit: 1
-      });
+      const { data, error } = await supabase
+        .from('nd_viagens')
+        .select(select)
+        .eq('id', ndId)
+        .single();
       
-      return response.data && response.data.length > 0 ? response.data[0] : null;
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        throw error;
+      }
+      
+      return data || null;
     } catch (error) {
       console.error('Erro ao buscar dados da ND:', error);
       throw error;

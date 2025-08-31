@@ -1,7 +1,7 @@
 // Configuração do cliente para APIs backend
 // Centraliza todas as chamadas para os endpoints seguros
 
-import { authService } from '../services/authService.js';
+// Import de authService removido
 
 class ApiClient {
   constructor() {
@@ -11,17 +11,11 @@ class ApiClient {
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
     
-    // Preparar headers com autenticação
+    // Preparar headers sem autenticação
     const headers = {
       'Content-Type': 'application/json',
       ...options.headers
     };
-    
-    // Adicionar token de autenticação se disponível (exceto para rotas de auth)
-    const token = authService.getToken();
-    if (token && !endpoint.startsWith('/auth/')) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
     
     const config = {
       method: 'POST',
@@ -39,18 +33,8 @@ class ApiClient {
       
       const response = await fetch(url, config);
       
-      // Tratar erros de autenticação
-      if (response.status === 401 || response.status === 403) {
-        const errorData = await response.json().catch(() => ({}));
-        
-        // Se token expirou ou é inválido, fazer logout
-        if (errorData.error?.includes('Token') || errorData.error?.includes('inativo')) {
-          console.warn('🔒 Token inválido ou usuário inativo - fazendo logout');
-          await authService.logout();
-          window.location.reload();
-          return;
-        }
-      }
+      // Tratamento de erros sem autenticação
+      // Erros 401/403 removidos pois não há mais autenticação
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({
@@ -68,8 +52,8 @@ class ApiClient {
     } catch (error) {
       console.error(`❌ Erro na requisição para ${endpoint}:`, error);
       
-      // Se erro de rede e usuário está logado, pode ser problema de conectividade
-      if (error.message.includes('Failed to fetch') && authService.isLoggedIn()) {
+      // Se erro de rede, pode ser problema de conectividade
+      if (error.message.includes('Failed to fetch')) {
         throw new Error('Erro de conexão. Verifique sua internet.');
       }
       

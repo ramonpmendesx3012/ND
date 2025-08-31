@@ -14,8 +14,8 @@ import { formatCurrency } from './utils/formatCurrency.js';
 import { formatDate, getCurrentDateForInput } from './utils/formatDate.js';
 import { CATEGORY_OPTIONS, EXPENSE_CATEGORIES, CATEGORY_LIMITS, TIME_CATEGORIES, NOTIFICATION_TYPES } from './utils/constants.js';
 import { suggestCategory } from './utils/categoryUtils.js';
-import { authService } from './services/authService.js';
-import LoginForm from './components/Auth/LoginForm.js';
+// Imports de autenticação removidos
+// Teste de conexão Supabase removido após validação bem-sucedida
 
 class App {
   constructor() {
@@ -36,64 +36,11 @@ class App {
     this.elements = {};
   }
 
-  /**
-   * Verificar se usuário está autenticado
-   * @returns {Promise<boolean>} Usuário autenticado
-   */
-  async checkAuthentication() {
-    try {
-      if (!authService.isLoggedIn()) {
-        console.log('👤 Usuário não está logado');
-        return false;
-      }
+  // Método de autenticação removido
 
-      // Verificar se token é válido
-      const isValid = await authService.verifyToken();
-      
-      if (isValid) {
-        const user = authService.getUser();
-        console.log(`✅ Usuário autenticado: ${user.nome} (${user.email})`);
-        return true;
-      } else {
-        console.log('🔒 Token inválido ou expirado');
-        return false;
-      }
-    } catch (error) {
-      console.error('❌ Erro na verificação de autenticação:', error);
-      return false;
-    }
-  }
+  // Método de login removido
 
-  /**
-   * Mostrar formulário de login
-   */
-  showLoginForm() {
-    // Limpar conteúdo da página
-    document.body.innerHTML = '';
-    
-    // Criar e mostrar formulário de login
-    const loginForm = new LoginForm();
-    const loginElement = loginForm.render();
-    document.body.appendChild(loginElement);
-    
-    console.log('🔐 Formulário de login exibido');
-  }
-
-  /**
-   * Fazer logout do usuário
-   */
-  async logout() {
-    try {
-      await authService.logout();
-      console.log('👋 Logout realizado');
-      
-      // Recarregar página para mostrar login
-      window.location.reload();
-    } catch (error) {
-      console.error('❌ Erro no logout:', error);
-      this.showNotification('Erro ao fazer logout', NOTIFICATION_TYPES.ERROR);
-    }
-  }
+  // Método de logout removido
 
   /**
    * Inicializa a aplicação
@@ -102,13 +49,7 @@ class App {
     try {
       console.log('🚀 Inicializando ND Express...');
       
-      // Verificar autenticação primeiro
-      const isAuthenticated = await this.checkAuthentication();
-      
-      if (!isAuthenticated) {
-        this.showLoginForm();
-        return;
-      }
+      // FASE 2 concluída: Conexão com Supabase validada
       
       // Verificar dependências
       console.log('📦 Verificando dependências...');
@@ -121,9 +62,6 @@ class App {
       
       // Carregar dados iniciais
       await this.loadInitialData();
-      
-      // Iniciar verificação automática de token
-      authService.startTokenVerification();
       
       console.log('✅ ND Express inicializado com sucesso!');
     } catch (error) {

@@ -1,5 +1,6 @@
-// Serviço para operações CRUD de lançamentos (despesas)
-import { apiClient } from '../config/apiClient.js';
+// FASE 3: Serviço para operações CRUD de lançamentos (despesas)
+// Integração direta com Supabase
+import supabase from '../config/supabaseClient.js';
 import { EXPENSE_CATEGORIES, VALIDATION } from '../utils/constants.js';
 
 class LaunchService {
@@ -13,18 +14,26 @@ class LaunchService {
       // Validar dados obrigatórios
       this.validateLaunchData(launchData);
       
-      const response = await apiClient.insert('lancamentos', {
-        nd_id: launchData.ndId,
-        data_despesa: launchData.date,
-        valor: parseFloat(launchData.value),
-        descricao: launchData.description || 'Não informado',
-        categoria: launchData.category,
-        // estabelecimento removido - campo não mais necessário
-        imagem_url: launchData.imageUrl,
-        confianca: parseInt(launchData.confidence) || 0
-      });
+      const { data, error } = await supabase
+        .from('lancamentos')
+        .insert({
+          nd_id: launchData.ndId,
+          data_despesa: launchData.date,
+          valor: parseFloat(launchData.value),
+          descricao: launchData.description || 'Não informado',
+          categoria: launchData.category,
+          estabelecimento: launchData.estabelecimento || 'Não informado',
+          imagem_url: launchData.imageUrl || 'https://via.placeholder.com/150',
+          confianca: parseInt(launchData.confidence) || 0
+        })
+        .select()
+        .single();
       
-      return response.data[0];
+      if (error) {
+        throw error;
+      }
+      
+      return data;
     } catch (error) {
       console.error('Erro ao adicionar lançamento:', error);
       throw error;
@@ -38,12 +47,17 @@ class LaunchService {
    */
   async getLaunchesByND(ndId) {
     try {
-      const response = await apiClient.query('lancamentos', {
-        filters: [{ column: 'nd_id', operator: 'eq', value: ndId }],
-        orderBy: { column: 'created_at', ascending: false }
-      });
+      const { data, error } = await supabase
+        .from('lancamentos')
+        .select('*')
+        .eq('nd_id', ndId)
+        .order('created_at', { ascending: false });
       
-      return response.data || [];
+      if (error) {
+        throw error;
+      }
+      
+      return data || [];
     } catch (error) {
       console.error('Erro ao buscar lançamentos:', error);
       throw error;
@@ -57,11 +71,17 @@ class LaunchService {
    */
   async deleteLaunch(launchId) {
     try {
-      const response = await apiClient.delete('lancamentos', [
-        { column: 'id', operator: 'eq', value: launchId }
-      ]);
+      const { data, error } = await supabase
+        .from('lancamentos')
+        .delete()
+        .eq('id', launchId)
+        .select();
       
-      return response;
+      if (error) {
+        throw error;
+      }
+      
+      return { success: true, data };
     } catch (error) {
       console.error('Erro ao excluir lançamento:', error);
       throw error;
@@ -76,12 +96,18 @@ class LaunchService {
    */
   async updateLaunch(launchId, updateData) {
     try {
-      const response = await apiClient.update('lancamentos',
-        updateData,
-        [{ column: 'id', operator: 'eq', value: launchId }]
-      );
+      const { data, error } = await supabase
+        .from('lancamentos')
+        .update(updateData)
+        .eq('id', launchId)
+        .select()
+        .single();
       
-      return response.data[0];
+      if (error) {
+        throw error;
+      }
+      
+      return data;
     } catch (error) {
       console.error('Erro ao atualizar lançamento:', error);
       throw error;
@@ -95,12 +121,17 @@ class LaunchService {
    */
   async getLaunchById(launchId) {
     try {
-      const response = await apiClient.query('lancamentos', {
-        filters: [{ column: 'id', operator: 'eq', value: launchId }],
-        limit: 1
-      });
+      const { data, error } = await supabase
+        .from('lancamentos')
+        .select('*')
+        .eq('id', launchId)
+        .single();
       
-      return response.data && response.data.length > 0 ? response.data[0] : null;
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        throw error;
+      }
+      
+      return data || null;
     } catch (error) {
       console.error('Erro ao buscar lançamento:', error);
       throw error;
