@@ -28,6 +28,11 @@ class ApiClient {
       headers,
       ...options
     };
+
+    // Serializar body para JSON se for um objeto
+    if (options.body && typeof options.body === 'object') {
+      config.body = JSON.stringify(options.body);
+    }
     
     try {
       console.log(`📡 ${config.method} ${url}`);
