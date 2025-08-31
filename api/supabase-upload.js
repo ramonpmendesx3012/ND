@@ -22,7 +22,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { fileBase64, fileName, bucket = 'comprovantes' } = req.body;
+    const { fileBase64, fileName, bucket = 'images' } = req.body;
 
     // Validar parâmetros obrigatórios
     if (!fileBase64) {
@@ -86,21 +86,18 @@ module.exports = async function handler(req, res) {
     
     const bucketExists = buckets.some(b => b.name === bucket);
     if (!bucketExists) {
-      console.log(`Bucket '${bucket}' não existe. Tentando criar...`);
+      console.error(`Bucket '${bucket}' não existe. Buckets disponíveis:`, buckets.map(b => b.name));
       
-      // Tentar criar o bucket
-      const { data: createData, error: createError } = await supabase.storage.createBucket(bucket, {
-        public: true,
-        allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
-        fileSizeLimit: 10485760 // 10MB
-      });
-      
-      if (createError) {
-        console.error('Erro ao criar bucket:', createError);
-        return res.status(500).json({ error: `Failed to create storage bucket: ${createError.message}` });
+      // Tentar usar bucket padrão 'avatars' se existir
+      const defaultBucket = buckets.find(b => b.name === 'avatars');
+      if (defaultBucket) {
+        console.log('Usando bucket padrão: avatars');
+        bucket = 'avatars';
+      } else {
+        return res.status(500).json({ 
+          error: `Storage bucket '${bucket}' not found. Available buckets: ${buckets.map(b => b.name).join(', ')}` 
+        });
       }
-      
-      console.log(`✅ Bucket '${bucket}' criado com sucesso`);
     }
     
     // Upload para o Supabase Storage
