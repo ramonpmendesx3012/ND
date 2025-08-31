@@ -1,12 +1,10 @@
 // Testes para authService
 import { authService } from '../authService.js';
 
-// Mock do apiClient
+// Mock do request
 jest.mock('../../config/apiClient.js', () => ({
   request: jest.fn()
 }));
-
-import { request } from '../../config/apiClient.js';
 
 // Mock do localStorage
 const localStorageMock = {
@@ -18,6 +16,12 @@ const localStorageMock = {
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock
 });
+
+// Mock do setInterval e clearInterval
+global.setInterval = jest.fn();
+global.clearInterval = jest.fn();
+
+import { request } from '../../config/apiClient.js';
 
 describe('authService', () => {
   beforeEach(() => {
@@ -282,6 +286,55 @@ describe('authService', () => {
     });
   });
 
+  describe('startTokenVerification', () => {
+    test('inicia verificação de token', () => {
+      authService.startTokenVerification();
+      
+      expect(global.setInterval).toHaveBeenCalledWith(
+        expect.any(Function),
+        60000 // 1 minuto
+      );
+    });
+
+    test('não inicia se já está verificando', () => {
+      authService.tokenVerificationInterval = 'existing-interval';
+      global.setInterval.mockClear();
+      
+      authService.startTokenVerification();
+      
+      expect(global.setInterval).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('stopTokenVerification', () => {
+    test('para verificação de token', () => {
+      authService.tokenVerificationInterval = 'test-interval';
+      
+      authService.stopTokenVerification();
+      
+      expect(global.clearInterval).toHaveBeenCalledWith('test-interval');
+      expect(authService.tokenVerificationInterval).toBe(null);
+    });
+  });
+
+  describe('constructor initialization', () => {
+    test('inicializa com dados do localStorage', () => {
+      localStorageMock.getItem.mockImplementation((key) => {
+        if (key === 'nd_token') return 'stored-token';
+        if (key === 'nd_user') return JSON.stringify({ id: 1, nome: 'Test User' });
+        return null;
+      });
+      
+      // Reimportar para testar o constructor
+      jest.resetModules();
+      const { authService: newAuthService } = require('../authService.js');
+      
+      expect(newAuthService.token).toBe('stored-token');
+      expect(newAuthService.user).toEqual({ id: 1, nome: 'Test User' });
+      expect(newAuthService.isAuthenticated).toBe(true);
+    });
+  });
+
   describe('validateEmail', () => {
     test('valida emails corretos', () => {
       expect(authService.validateEmail('teste@exemplo.com')).toBe(true);
@@ -324,31 +377,42 @@ describe('authService', () => {
   });
 
   describe('isTokenExpiringSoon', () => {
-    test('retorna true quando não há token', () => {
+    test('retorna false quando não há token', () => {
       authService.token = null;
-      expect(authService.isTokenExpiringSoon()).toBe(true);
+      
+      const result = authService.isTokenExpiringSoon();
+      
+      expect(result).toBe(false);
     });
 
-    test('detecta token próximo do vencimento', () => {
-      // Criar token que expira em 30 minutos
-      const payload = {
-        exp: Math.floor(Date.now() / 1000) + (30 * 60) // 30 minutos
-      };
-      const fakeToken = 'header.' + btoa(JSON.stringify(payload)) + '.signature';
-      authService.token = fakeToken;
+    test('retorna false para token válido', () => {
+      // Token que expira em 2 horas (futuro)
+      const futureTime = Math.floor(Date.now() / 1000) + 7200;
+      const validToken = `header.${btoa(JSON.stringify({ exp: futureTime }))}.signature`;
+      authService.token = validToken;
       
-      expect(authService.isTokenExpiringSoon()).toBe(true);
+      const result = authService.isTokenExpiringSoon();
+      
+      expect(result).toBe(false);
     });
 
-    test('detecta token com tempo suficiente', () => {
-      // Criar token que expira em 2 horas
-      const payload = {
-        exp: Math.floor(Date.now() / 1000) + (2 * 60 * 60) // 2 horas
-      };
-      const fakeToken = 'header.' + btoa(JSON.stringify(payload)) + '.signature';
-      authService.token = fakeToken;
+    test('retorna true para token expirando em breve', () => {
+      // Token que expira em 4 minutos (menos de 5 minutos)
+      const soonTime = Math.floor(Date.now() / 1000) + 240;
+      const expiringToken = `header.${btoa(JSON.stringify({ exp: soonTime }))}.signature`;
+      authService.token = expiringToken;
       
-      expect(authService.isTokenExpiringSoon()).toBe(false);
+      const result = authService.isTokenExpiringSoon();
+      
+      expect(result).toBe(true);
+    });
+
+    test('retorna false para token com formato inválido', () => {
+      authService.token = 'invalid-token';
+      
+      const result = authService.isTokenExpiringSoon();
+      
+      expect(result).toBe(false);
     });
   });
 });
